@@ -34,7 +34,6 @@ $post_template = get_option( 'csf_email_template_frontend_post', $default_post )
 
 	<form class="csf-dashboard-settings-form" data-csf-settings-form>
 		<input type="hidden" name="section" value="email_templates">
-		<div data-csf-settings-result></div>
 		<table class="form-table">
             <tr>
 				<th scope="row"><?php _e( 'Admin Notification Email', 'cotlas-simple-forms' ); ?></th>
@@ -73,8 +72,9 @@ $post_template = get_option( 'csf_email_template_frontend_post', $default_post )
 				</td>
 			</tr>
 		</table>
-		<p class="submit">
+		<div style="padding: 1.5em 0;">
 			<button type="submit" class="button button-primary"><?php esc_html_e( 'Save Templates', 'cotlas-simple-forms' ); ?></button>
-		</p>
+			<div data-csf-settings-result style="margin-top: 10px;"></div>
+		</div>
 	</form>
 </div>

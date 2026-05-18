@@ -328,16 +328,29 @@ class CSF_Blocks {
         switch ( $type ) {
             case 'textarea':
                 if ( ! empty( $attributes['useTinyMCE'] ) ) {
-                    ob_start();
-                    wp_editor( $value, $unique_id, array(
-                        'textarea_name' => $name,
-                        'media_buttons' => false,
-                        'textarea_rows' => 5,
-                        'teeny'         => true,
-                        'quicktags'     => true,
-                        'editor_class'  => 'csf-tinymce-editor'
-                    ) );
-                    $html .= ob_get_clean();
+                    $html .= '<div id="' . esc_attr( $unique_id ) . '_editor" class="csf-block-editor-container" style="border: 1px solid #ccc; min-height: 200px;"></div>';
+                    $html .= '<textarea name="' . esc_attr( $name ) . '" id="' . esc_attr( $unique_id ) . '" style="display:none;" ' . $required . '>' . esc_textarea( $value ) . '</textarea>';
+                    $html .= '<script>
+                        document.addEventListener("DOMContentLoaded", function() {
+                            if (typeof wp !== "undefined" && wp.editPost) {
+                                wp.domReady(function() {
+                                    var editorId = "' . esc_js( $unique_id ) . '_editor";
+                                    var textareaId = "' . esc_js( $unique_id ) . '";
+                                    var initialContent = document.getElementById(textareaId).value;
+                                    
+                                    wp.editPost.initializeEditor(editorId, "post", 0, {
+                                        hasFixedToolbar: true,
+                                        focusMode: false
+                                    }, { content: initialContent });
+                                    
+                                    wp.data.subscribe(function() {
+                                        var content = wp.data.select("core/editor").getEditedPostContent();
+                                        document.getElementById(textareaId).value = content;
+                                    });
+                                });
+                            }
+                        });
+                    </script>';
                 } else {
                     $html .= '<textarea name="' . esc_attr( $name ) . '" id="' . esc_attr( $unique_id ) . '" placeholder="' . esc_attr( $placeholder ) . '" ' . $required . '>' . esc_textarea( $value ) . '</textarea>';
                 }

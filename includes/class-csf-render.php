@@ -67,6 +67,22 @@ class CSF_Render {
 
         $content = parse_blocks( $post->post_content );
         
+        $has_block_editor = false;
+        foreach ( $content as $block ) {
+            if ( $block['blockName'] === 'csf/textarea' && ! empty( $block['attrs']['useTinyMCE'] ) ) {
+                $has_block_editor = true;
+                break;
+            }
+        }
+        
+        if ( $has_block_editor ) {
+            wp_enqueue_script( 'wp-edit-post' );
+            wp_enqueue_style( 'wp-edit-post' );
+            wp_enqueue_style( 'wp-format-library' );
+            wp_enqueue_style( 'wp-block-library' );
+            wp_enqueue_style( 'wp-components' );
+        }
+
         $inline_css = $this->collect_custom_css_from_blocks( $content );
 
         $steps = array();

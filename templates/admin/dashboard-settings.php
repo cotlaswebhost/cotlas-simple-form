@@ -13,7 +13,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 	<form class="csf-dashboard-settings-form" data-csf-settings-form>
 		<input type="hidden" name="section" value="settings">
-		<div data-csf-settings-result></div>
 
 		<table class="form-table" role="presentation">
 			<tr class="csf-settings-section-row">
@@ -97,8 +96,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 			</tr>
 		</table>
 
-		<p class="submit">
+		<div style="padding: 1.5em 0;">
 			<button type="submit" class="button button-primary"><?php esc_html_e( 'Save Settings', 'cotlas-simple-forms' ); ?></button>
-		</p>
+			<div data-csf-settings-result style="margin-top: 10px;"></div>
+		</div>
 	</form>
 </div>

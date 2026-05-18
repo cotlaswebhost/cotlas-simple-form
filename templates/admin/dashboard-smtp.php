@@ -13,7 +13,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 	<form class="csf-dashboard-settings-form" data-csf-settings-form>
 		<input type="hidden" name="section" value="smtp">
-		<div data-csf-settings-result></div>
 		<table class="form-table" role="presentation">
 			<tr>
 				<th scope="row"><?php esc_html_e( 'Default Recipient Email', 'cotlas-simple-forms' ); ?></th>
@@ -62,8 +61,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 				<td><input type="text" name="csf_from_name" value="<?php echo esc_attr( get_option( 'csf_from_name' ) ); ?>" class="regular-text"></td>
 			</tr>
 		</table>
-		<p class="submit">
+		<div style="padding: 1.5em 0;">
 			<button type="submit" class="button button-primary"><?php esc_html_e( 'Save SMTP Settings', 'cotlas-simple-forms' ); ?></button>
-		</p>
+			<div data-csf-settings-result style="margin-top: 10px;"></div>
+		</div>
 	</form>
 </div>
