@@ -47,6 +47,8 @@
             checkboxAllowMultiple: { type: 'boolean', default: true },
             userMetaTarget: { type: 'string', default: '' },
             userMetaKey: { type: 'string', default: '' },
+            postMetaTarget: { type: 'string', default: '' },
+            postMetaKey: { type: 'string', default: '' },
             conditionalEnabled: { type: 'boolean', default: false },
             conditionalField: { type: 'string', default: '' },
             conditionalOperator: { type: 'string', default: 'equals' },
@@ -581,6 +583,24 @@
                             help: 'user_meta key, e.g. instagram, linkedin_url, whatsapp_number',
                             value: attributes.userMetaKey,
                             onChange: function( val ) { props.setAttributes( { userMetaKey: val } ); }
+                        } ),
+                        el( SelectControl, {
+                            label: 'Post field mapping',
+                            help: 'Tie this field to a WordPress post field (for Add Post forms).',
+                            value: attributes.postMetaTarget,
+                            options: [
+                                { label: '— No mapping —', value: '' },
+                                { label: 'Post Title', value: 'post_title' },
+                                { label: 'Post Content', value: 'post_content' },
+                                { label: 'Custom post meta key', value: 'meta' },
+                            ],
+                            onChange: function( val ) { props.setAttributes( { postMetaTarget: val } ); }
+                        } ),
+                        attributes.postMetaTarget === 'meta' && el( TextControl, {
+                            label: 'Custom post meta key',
+                            help: 'post meta key, e.g. price, location, color',
+                            value: attributes.postMetaKey,
+                            onChange: function( val ) { props.setAttributes( { postMetaKey: val } ); }
                         } ),
                         el( TextControl, {
                             label: 'Custom CSS Class',

@@ -493,13 +493,51 @@ class CSF_Submission {
             $post_status = 'pending';
         }
 
-        $post_title = isset( $form_data['csf_post_title'] ) ? sanitize_text_field( $form_data['csf_post_title'] ) : '';
-        if ( ! $post_title ) {
-            $post_title = __( 'Frontend Submission', 'cotlas-simple-forms' ) . ' - ' . time();
+        // Parse form blocks to find post mapping fields
+        $post = get_post( $form_id );
+        $post_title = '';
+        $post_content = '';
+        $post_excerpt = '';
+        $meta_input = array();
+
+        if ( $post ) {
+            $blocks = parse_blocks( $post->post_content );
+            foreach ( $blocks as $block ) {
+                if ( $block['blockName'] === 'csf/field' && ! empty( $block['attrs'] ) ) {
+                    $attrs = $block['attrs'];
+                    $name = ! empty( $attrs['name'] ) ? $attrs['name'] : sanitize_title( $attrs['label'] );
+                    $key = 'csf_' . $name;
+
+                    if ( isset( $attrs['postMetaTarget'] ) && ! empty( $attrs['postMetaTarget'] ) && isset( $form_data[ $key ] ) ) {
+                        $value = $form_data[ $key ];
+                        if ( $attrs['postMetaTarget'] === 'post_title' ) {
+                            $post_title = $value;
+                        } elseif ( $attrs['postMetaTarget'] === 'post_content' ) {
+                            // Try reading the un-sanitized $_POST to preserve HTML if available
+                            $post_content = isset( $_POST[ $name ] ) ? wp_kses_post( $_POST[ $name ] ) : wp_kses_post( $value );
+                        } elseif ( $attrs['postMetaTarget'] === 'meta' && ! empty( $attrs['postMetaKey'] ) ) {
+                            $meta_input[ $attrs['postMetaKey'] ] = $value;
+                        }
+                    }
+                }
+            }
         }
 
-        $post_content = isset( $form_data['csf_post_content'] ) ? wp_kses_post( $form_data['csf_post_content'] ) : '';
-        $post_excerpt = isset( $form_data['csf_post_excerpt'] ) ? sanitize_textarea_field( $form_data['csf_post_excerpt'] ) : '';
+        // Fallback to legacy fields if mappings aren't found
+        if ( empty( $post_title ) ) {
+            $post_title = isset( $form_data['csf_post_title'] ) ? sanitize_text_field( $form_data['csf_post_title'] ) : '';
+            if ( ! $post_title ) {
+                $post_title = __( 'Frontend Submission', 'cotlas-simple-forms' ) . ' - ' . time();
+            }
+        }
+
+        if ( empty( $post_content ) ) {
+            $post_content = isset( $form_data['csf_post_content'] ) ? wp_kses_post( $form_data['csf_post_content'] ) : '';
+        }
+
+        if ( empty( $post_excerpt ) ) {
+            $post_excerpt = isset( $form_data['csf_post_excerpt'] ) ? sanitize_textarea_field( $form_data['csf_post_excerpt'] ) : '';
+        }
 
         $post_data = array(
             'post_title'   => $post_title,
@@ -507,6 +545,7 @@ class CSF_Submission {
             'post_excerpt' => $post_excerpt,
             'post_status'  => $post_status,
             'post_type'    => $post_type,
+            'meta_input'   => $meta_input,
         );
 
         if ( is_user_logged_in() ) {

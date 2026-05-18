@@ -240,7 +240,7 @@ class DashboardPage {
 			);
 		}
 
-		wp_send_json_success( array( 'message' => __( 'Settings saved.', 'cotlas-simple-forms' ) ) );
+		wp_send_json_success( array( 'message' => __( 'Settings saved successfully.', 'cotlas-simple-forms' ) ) );
 	}
 
 	/**
@@ -626,6 +626,13 @@ class DashboardPage {
 			$data = get_post_meta( $submission->ID, 'csf_data', true );
 			if ( empty( $data ) || ! is_array( $data ) ) {
 				continue;
+			}
+			$form_id = get_post_meta( $submission->ID, 'csf_form_id', true );
+			if ( $form_id ) {
+				$form_type = get_post_meta( $form_id, 'csf_form_type', true );
+				if ( 'frontend_post' === $form_type ) {
+					continue;
+				}
 			}
 			$submissions[] = $submission;
 			if ( -1 !== $limit && count( $submissions ) >= $limit ) {
