@@ -51,6 +51,12 @@
 	min-height: 38px;
 }
 
+.csf-quick-actions .button.is-active {
+	background: #2271b1;
+	border-color: #2271b1;
+	color: #fff;
+}
+
 .csf-quick-actions .dashicons {
 	font-size: 16px;
 	height: 16px;
@@ -183,35 +189,11 @@
 	margin: 0;
 }
 
-.csf-dashboard-tabs {
-	background: #fff;
-	border: 1px solid #dcdcde;
-	border-radius: 6px;
-	display: flex;
-	flex-wrap: wrap;
-	gap: 4px;
-	margin: 18px 0;
-	padding: 8px;
-}
-
-.csf-dashboard-tabs a {
-	border-radius: 4px;
-	color: #1d2327;
-	font-weight: 600;
-	padding: 9px 12px;
-	text-decoration: none;
-}
-
-.csf-dashboard-tabs a:hover,
-.csf-dashboard-tabs a.is-active {
-	background: #2271b1;
-	color: #fff;
-}
-
 .csf-dashboard-tab-panel {
 	background: #fff;
 	border: 1px solid #dcdcde;
 	border-radius: 6px;
+	margin-top: 18px;
 	padding: 18px;
 }
 
@@ -219,13 +201,42 @@
 	margin: 0;
 }
 
-.csf-dashboard-frame {
+.csf-tab-header {
+	align-items: center;
+	display: flex;
+	gap: 16px;
+	justify-content: space-between;
+	margin-bottom: 16px;
+}
+
+.csf-tab-header h2 {
+	font-size: 20px;
+	margin: 0 0 4px;
+}
+
+.csf-tab-header p {
+	color: #646970;
+	margin: 0;
+}
+
+.csf-dashboard-content.is-loading {
+	opacity: 0.7;
+}
+
+.csf-loading {
 	background: #fff;
 	border: 1px solid #dcdcde;
 	border-radius: 6px;
-	box-sizing: border-box;
-	min-height: 760px;
-	width: 100%;
+	margin-top: 18px;
+	padding: 24px;
+}
+
+.csf-dashboard-table input[readonly] {
+	max-width: 100%;
+}
+
+.csf-create-form {
+	max-width: 780px;
 }
 
 @media (max-width: 1100px) {

@@ -42,5 +42,22 @@ class Assets {
 			array(),
 			CSF_PLUGIN_VERSION
 		);
+
+		wp_enqueue_script(
+			'csf-admin',
+			CSF_PLUGIN_URL . 'assets/js/admin.js',
+			array( 'jquery' ),
+			CSF_PLUGIN_VERSION,
+			true
+		);
+
+		wp_localize_script(
+			'csf-admin',
+			'csfAdmin',
+			array(
+				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+				'nonce'   => wp_create_nonce( 'csf_dashboard_tabs' ),
+			)
+		);
 	}
 }

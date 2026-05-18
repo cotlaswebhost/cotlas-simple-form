@@ -76,7 +76,7 @@ To publish an update:
 1. Update the plugin version in `cotlas-simple-forms.php`.
 2. Commit and push the code to GitHub.
 3. Create a GitHub release with a matching version tag, for example:
-   `v1.1.1`
+   `v1.1.2`
 
 WordPress will show the update when the release version is newer than the installed plugin version.
 
@@ -107,7 +107,7 @@ templates/   Admin templates
 
 ## Version
 
-Current version: `1.1.1`
+Current version: `1.1.2`
 
 ## Author
 

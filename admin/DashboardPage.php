@@ -63,6 +63,8 @@ class DashboardPage {
 		add_action( 'admin_menu', array( $this, 'add_page' ), 5 );
 		add_action( 'admin_menu', array( $this, 'order_submenu' ), 99 );
 		add_action( 'admin_init', array( $this, 'redirect_plugin_pages_to_dashboard' ) );
+		add_action( 'wp_ajax_csf_dashboard_tab', array( $this, 'ajax_dashboard_tab' ) );
+		add_action( 'wp_ajax_csf_dashboard_create_form', array( $this, 'ajax_create_form' ) );
 	}
 
 	/**
@@ -190,6 +192,91 @@ class DashboardPage {
 	}
 
 	/**
+	 * Load a dashboard tab without refreshing the page.
+	 *
+	 * @return void
+	 */
+	public function ajax_dashboard_tab() {
+		check_ajax_referer( 'csf_dashboard_tabs', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'cotlas-simple-forms' ) ) );
+		}
+
+		$tab = isset( $_POST['tab'] ) ? sanitize_key( wp_unslash( $_POST['tab'] ) ) : 'overview';
+		if ( isset( $_POST['settings_tab'] ) && '' !== $_POST['settings_tab'] ) {
+			$_GET['csf_settings_tab'] = sanitize_key( wp_unslash( $_POST['settings_tab'] ) );
+		}
+		if ( isset( $_POST['form_type'] ) && '' !== $_POST['form_type'] ) {
+			$_GET['csf_default_form_type'] = sanitize_key( wp_unslash( $_POST['form_type'] ) );
+		}
+
+		$url_args = array(
+			'post_type' => 'csf_form',
+			'page'      => 'csf-dashboard',
+			'tab'       => $tab,
+		);
+		if ( isset( $_GET['csf_settings_tab'] ) ) {
+			$url_args['csf_settings_tab'] = sanitize_key( wp_unslash( $_GET['csf_settings_tab'] ) );
+		}
+		if ( isset( $_GET['csf_default_form_type'] ) ) {
+			$url_args['csf_default_form_type'] = sanitize_key( wp_unslash( $_GET['csf_default_form_type'] ) );
+		}
+
+		wp_send_json_success(
+			array(
+				'html' => $this->render_tab_content( $tab ),
+				'url'  => add_query_arg( $url_args, admin_url( 'edit.php' ) ),
+			)
+		);
+	}
+
+	/**
+	 * Create a draft form from the dashboard Add Form tab.
+	 *
+	 * @return void
+	 */
+	public function ajax_create_form() {
+		check_ajax_referer( 'csf_dashboard_tabs', 'nonce' );
+
+		if ( ! current_user_can( 'edit_posts' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'cotlas-simple-forms' ) ) );
+		}
+
+		$title = isset( $_POST['csf_form_title'] ) ? sanitize_text_field( wp_unslash( $_POST['csf_form_title'] ) ) : '';
+		$type  = isset( $_POST['csf_form_type'] ) ? sanitize_key( wp_unslash( $_POST['csf_form_type'] ) ) : 'normal';
+
+		if ( '' === $title ) {
+			wp_send_json_error( array( 'message' => __( 'Please enter a form title.', 'cotlas-simple-forms' ) ) );
+		}
+
+		$allowed_types = array( 'normal', 'login', 'register', 'payment', 'donation', 'frontend_post' );
+		if ( ! in_array( $type, $allowed_types, true ) ) {
+			$type = 'normal';
+		}
+
+		$form_id = wp_insert_post(
+			array(
+				'post_title'  => $title,
+				'post_type'   => 'csf_form',
+				'post_status' => 'draft',
+			)
+		);
+
+		if ( is_wp_error( $form_id ) || ! $form_id ) {
+			wp_send_json_error( array( 'message' => __( 'Could not create the form.', 'cotlas-simple-forms' ) ) );
+		}
+
+		update_post_meta( $form_id, 'csf_form_type', $type );
+
+		wp_send_json_success(
+			array(
+				'redirect' => get_edit_post_link( $form_id, 'raw' ),
+			)
+		);
+	}
+
+	/**
 	 * Render dashboard.
 	 *
 	 * @return void
@@ -220,6 +307,114 @@ class DashboardPage {
 		if ( file_exists( $template ) ) {
 			include $template;
 		}
+	}
+
+	/**
+	 * Render dashboard tab content.
+	 *
+	 * @param string $tab Active tab.
+	 * @return string
+	 */
+	public function render_tab_content( $tab ) {
+		ob_start();
+
+		switch ( $tab ) {
+			case 'all_forms':
+				$this->render_all_forms_tab();
+				break;
+			case 'add_form':
+				$this->render_add_form_tab();
+				break;
+			case 'settings':
+				echo '<div class="csf-dashboard-tab-panel">';
+				( new \CSF_Settings() )->render_settings_page();
+				echo '</div>';
+				break;
+			case 'submissions':
+				echo '<div class="csf-dashboard-tab-panel">';
+				( new \CSF_Admin_List() )->render_list_page();
+				echo '</div>';
+				break;
+			case 'email_templates':
+				echo '<div class="csf-dashboard-tab-panel">';
+				include CSF_PLUGIN_DIR . 'templates/admin/email-templates.php';
+				echo '</div>';
+				break;
+			case 'activity_log':
+				$logs = $this->activity_logger->latest( 100 );
+				echo '<div class="csf-dashboard-tab-panel">';
+				include CSF_PLUGIN_DIR . 'templates/admin/activity-log.php';
+				echo '</div>';
+				break;
+			case 'overview':
+			default:
+				$this->render_overview_tab();
+				break;
+		}
+
+		return ob_get_clean();
+	}
+
+	/**
+	 * Render the overview dashboard content.
+	 *
+	 * @return void
+	 */
+	private function render_overview_tab() {
+		$data = $this->dashboard_data();
+		include CSF_PLUGIN_DIR . 'templates/admin/dashboard-overview.php';
+	}
+
+	/**
+	 * Render a clean forms table without WordPress admin chrome.
+	 *
+	 * @return void
+	 */
+	private function render_all_forms_tab() {
+		$forms = get_posts(
+			array(
+				'post_type'      => 'csf_form',
+				'post_status'    => array( 'publish', 'draft', 'pending', 'private' ),
+				'posts_per_page' => 50,
+				'orderby'        => 'modified',
+				'order'          => 'DESC',
+			)
+		);
+
+		include CSF_PLUGIN_DIR . 'templates/admin/dashboard-all-forms.php';
+	}
+
+	/**
+	 * Render dashboard form creator.
+	 *
+	 * @return void
+	 */
+	private function render_add_form_tab() {
+		include CSF_PLUGIN_DIR . 'templates/admin/dashboard-add-form.php';
+	}
+
+	/**
+	 * Collect dashboard data.
+	 *
+	 * @return array
+	 */
+	private function dashboard_data() {
+		return array(
+			'total_forms'           => $this->forms->count_all(),
+			'total_entries'         => $this->submissions->count_all(),
+			'total_login_forms'     => $this->forms->count_by_type( 'login' ),
+			'total_register_forms'  => $this->forms->count_by_type( 'register' ),
+			'total_payment_forms'   => $this->forms->count_by_type( 'payment' ),
+			'total_donation_forms'  => $this->forms->count_by_type( 'donation' ),
+			'total_contact_forms'   => $this->forms->count_contact_forms(),
+			'total_post_forms'      => $this->forms->count_by_type( 'frontend_post' ),
+			'total_email_sent'      => (int) get_option( 'csf_email_sent_count', 0 ),
+			'smtp_enabled'          => (bool) get_option( 'csf_enable_smtp' ),
+			'latest_submissions'    => $this->submissions->latest( 5 ),
+			'latest_frontend_posts' => $this->latest_frontend_posts(),
+			'latest_activity'       => $this->activity_logger->latest( 8 ),
+			'plugin_version'        => CSF_PLUGIN_VERSION,
+		);
 	}
 
 	/**
