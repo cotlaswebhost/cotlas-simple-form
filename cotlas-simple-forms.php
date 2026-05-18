@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Cotlas Simple Forms
  * Description: Simple form builder plugin by Cotlas Web solution. Login / Registration form builder. Block based form builder to create forms.
- * Version: 1.1.2
+ * Version: 1.1.3
  * Author: Cotlas
  * Text Domain: cotlas-simple-forms
  * Update URI: https://api.github.com/repos/cotlaswebhost/cotlas-simple-form/releases/latest
@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 define( 'CSF_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'CSF_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
-define( 'CSF_PLUGIN_VERSION', '1.1.2' );
+define( 'CSF_PLUGIN_VERSION', '1.1.3' );
 define( 'CSF_PLUGIN_FILE', __FILE__ );
 
 require_once CSF_PLUGIN_DIR . 'includes/autoload.php';

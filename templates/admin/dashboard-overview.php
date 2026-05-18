@@ -48,7 +48,7 @@ $cards = array(
 					$page_title = get_post_meta( $submission->ID, 'csf_page_title', true );
 					?>
 					<li>
-						<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=csf_form&page=csf-view-submission&id=' . absint( $submission->ID ) ) ); ?>">
+						<a href="<?php echo esc_url( add_query_arg( array( 'post_type' => 'csf_form', 'page' => 'csf-dashboard', 'tab' => 'submissions' ), admin_url( 'edit.php' ) ) ); ?>" data-csf-dashboard-action data-tab="submissions">
 							<?php echo esc_html( $page_title ? $page_title : $submission->post_title ); ?>
 						</a>
 						<span><?php echo esc_html( sprintf( __( 'Form #%s', 'cotlas-simple-forms' ), $form_id ? $form_id : '-' ) ); ?></span>

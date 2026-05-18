@@ -38,7 +38,7 @@ $settings_tab = isset( $_GET['csf_settings_tab'] ) ? sanitize_key( wp_unslash( $
 			<span class="dashicons dashicons-list-view"></span>
 			<?php esc_html_e( 'View Entries', 'cotlas-simple-forms' ); ?>
 		</a>
-		<a class="button <?php echo esc_attr( 'settings' === $active_tab && 'email' === $settings_tab ? 'is-active' : '' ); ?>" href="<?php echo esc_url( add_query_arg( array( 'post_type' => 'csf_form', 'page' => 'csf-dashboard', 'tab' => 'settings', 'csf_settings_tab' => 'email' ), admin_url( 'edit.php' ) ) ); ?>" data-csf-dashboard-tab data-tab="settings" data-settings-tab="email" role="tab" aria-selected="<?php echo esc_attr( 'settings' === $active_tab && 'email' === $settings_tab ? 'true' : 'false' ); ?>">
+		<a class="button <?php echo esc_attr( 'smtp' === $active_tab ? 'is-active' : '' ); ?>" href="<?php echo esc_url( add_query_arg( array( 'post_type' => 'csf_form', 'page' => 'csf-dashboard', 'tab' => 'smtp' ), admin_url( 'edit.php' ) ) ); ?>" data-csf-dashboard-tab data-tab="smtp" role="tab" aria-selected="<?php echo esc_attr( 'smtp' === $active_tab ? 'true' : 'false' ); ?>">
 			<span class="dashicons dashicons-email-alt"></span>
 			<?php esc_html_e( 'SMTP Settings', 'cotlas-simple-forms' ); ?>
 		</a>

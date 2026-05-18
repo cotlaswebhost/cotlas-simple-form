@@ -65,6 +65,9 @@ class DashboardPage {
 		add_action( 'admin_init', array( $this, 'redirect_plugin_pages_to_dashboard' ) );
 		add_action( 'wp_ajax_csf_dashboard_tab', array( $this, 'ajax_dashboard_tab' ) );
 		add_action( 'wp_ajax_csf_dashboard_create_form', array( $this, 'ajax_create_form' ) );
+		add_action( 'wp_ajax_csf_dashboard_save_settings', array( $this, 'ajax_save_settings' ) );
+		add_action( 'wp_ajax_csf_dashboard_view_submission', array( $this, 'ajax_view_submission' ) );
+		add_action( 'wp_ajax_csf_dashboard_delete_submission', array( $this, 'ajax_delete_submission' ) );
 	}
 
 	/**
@@ -192,6 +195,108 @@ class DashboardPage {
 	}
 
 	/**
+	 * Save dashboard settings without a page reload.
+	 *
+	 * @return void
+	 */
+	public function ajax_save_settings() {
+		check_ajax_referer( 'csf_dashboard_tabs', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'cotlas-simple-forms' ) ) );
+		}
+
+		$section = isset( $_POST['section'] ) ? sanitize_key( wp_unslash( $_POST['section'] ) ) : 'settings';
+
+		if ( 'smtp' === $section ) {
+			$this->save_option_values(
+				array(
+					'csf_to_email'       => 'email',
+					'csf_enable_smtp'    => 'bool',
+					'csf_use_global_smtp'=> 'bool',
+					'csf_smtp_host'      => 'text',
+					'csf_smtp_port'      => 'text',
+					'csf_smtp_user'      => 'text',
+					'csf_smtp_pass'      => 'text',
+					'csf_smtp_encryption'=> 'key',
+					'csf_from_email'     => 'email',
+					'csf_from_name'      => 'text',
+				)
+			);
+		} else {
+			$this->save_option_values(
+				array(
+					'csf_delete_data_uninstall' => 'bool',
+					'csf_turnstile_site_key'    => 'text',
+					'csf_turnstile_secret_key'  => 'text',
+					'csf_google_places_api_key' => 'text',
+					'csf_enable_limit'          => 'bool',
+					'csf_limit_duration'        => 'key',
+					'csf_allowed_file_types'    => 'text',
+					'csf_max_upload_size'       => 'absint',
+					'csf_disable_frontend_css'  => 'bool',
+					'csf_disable_frontend_js'   => 'bool',
+				)
+			);
+		}
+
+		wp_send_json_success( array( 'message' => __( 'Settings saved.', 'cotlas-simple-forms' ) ) );
+	}
+
+	/**
+	 * View submission data in the dashboard.
+	 *
+	 * @return void
+	 */
+	public function ajax_view_submission() {
+		check_ajax_referer( 'csf_dashboard_tabs', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'cotlas-simple-forms' ) ) );
+		}
+
+		$submission_id = isset( $_POST['submission_id'] ) ? absint( $_POST['submission_id'] ) : 0;
+		$post          = get_post( $submission_id );
+		if ( ! $post || 'csf_submission' !== $post->post_type ) {
+			wp_send_json_error( array( 'message' => __( 'Submission not found.', 'cotlas-simple-forms' ) ) );
+		}
+
+		$form_data = get_post_meta( $submission_id, 'csf_data', true );
+		$files     = get_post_meta( $submission_id, 'csf_files', true );
+		$form_id   = get_post_meta( $submission_id, 'csf_form_id', true );
+
+		ob_start();
+		include CSF_PLUGIN_DIR . 'templates/admin/dashboard-submission-view.php';
+		wp_send_json_success( array( 'html' => ob_get_clean() ) );
+	}
+
+	/**
+	 * Delete a submission from the dashboard.
+	 *
+	 * @return void
+	 */
+	public function ajax_delete_submission() {
+		check_ajax_referer( 'csf_dashboard_tabs', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'cotlas-simple-forms' ) ) );
+		}
+
+		$submission_id = isset( $_POST['submission_id'] ) ? absint( $_POST['submission_id'] ) : 0;
+		$post          = get_post( $submission_id );
+		if ( ! $post || 'csf_submission' !== $post->post_type ) {
+			wp_send_json_error( array( 'message' => __( 'Submission not found.', 'cotlas-simple-forms' ) ) );
+		}
+
+		$deleted = wp_delete_post( $submission_id, true );
+		if ( ! $deleted ) {
+			wp_send_json_error( array( 'message' => __( 'Could not delete submission.', 'cotlas-simple-forms' ) ) );
+		}
+
+		wp_send_json_success( array( 'message' => __( 'Submission deleted.', 'cotlas-simple-forms' ) ) );
+	}
+
+	/**
 	 * Load a dashboard tab without refreshing the page.
 	 *
 	 * @return void
@@ -288,7 +393,7 @@ class DashboardPage {
 
 		$data = array(
 			'total_forms'           => $this->forms->count_all(),
-			'total_entries'         => $this->submissions->count_all(),
+			'total_entries'         => count( $this->get_valid_submissions( -1 ) ),
 			'total_login_forms'     => $this->forms->count_by_type( 'login' ),
 			'total_register_forms'  => $this->forms->count_by_type( 'register' ),
 			'total_payment_forms'   => $this->forms->count_by_type( 'payment' ),
@@ -297,7 +402,7 @@ class DashboardPage {
 			'total_post_forms'      => $this->forms->count_by_type( 'frontend_post' ),
 			'total_email_sent'      => (int) get_option( 'csf_email_sent_count', 0 ),
 			'smtp_enabled'          => (bool) get_option( 'csf_enable_smtp' ),
-			'latest_submissions'    => $this->submissions->latest( 5 ),
+			'latest_submissions'    => $this->get_valid_submissions( 5 ),
 			'latest_frontend_posts' => $this->latest_frontend_posts(),
 			'latest_activity'       => $this->activity_logger->latest( 8 ),
 			'plugin_version'        => CSF_PLUGIN_VERSION,
@@ -326,14 +431,13 @@ class DashboardPage {
 				$this->render_add_form_tab();
 				break;
 			case 'settings':
-				echo '<div class="csf-dashboard-tab-panel">';
-				( new \CSF_Settings() )->render_settings_page();
-				echo '</div>';
+				$this->render_settings_tab();
+				break;
+			case 'smtp':
+				$this->render_smtp_tab();
 				break;
 			case 'submissions':
-				echo '<div class="csf-dashboard-tab-panel">';
-				( new \CSF_Admin_List() )->render_list_page();
-				echo '</div>';
+				$this->render_submissions_tab();
 				break;
 			case 'email_templates':
 				echo '<div class="csf-dashboard-tab-panel">';
@@ -394,6 +498,64 @@ class DashboardPage {
 	}
 
 	/**
+	 * Render settings rows.
+	 *
+	 * @return void
+	 */
+	private function render_settings_tab() {
+		include CSF_PLUGIN_DIR . 'templates/admin/dashboard-settings.php';
+	}
+
+	/**
+	 * Render SMTP settings.
+	 *
+	 * @return void
+	 */
+	private function render_smtp_tab() {
+		include CSF_PLUGIN_DIR . 'templates/admin/dashboard-smtp.php';
+	}
+
+	/**
+	 * Render dashboard-native submissions.
+	 *
+	 * @return void
+	 */
+	private function render_submissions_tab() {
+		$submissions = $this->get_valid_submissions( 50 );
+
+		include CSF_PLUGIN_DIR . 'templates/admin/dashboard-submissions.php';
+	}
+
+	/**
+	 * Save a typed list of options.
+	 *
+	 * @param array $options Option map.
+	 * @return void
+	 */
+	private function save_option_values( $options ) {
+		foreach ( $options as $option => $type ) {
+			$value = isset( $_POST[ $option ] ) ? wp_unslash( $_POST[ $option ] ) : '';
+			if ( 'bool' === $type ) {
+				update_option( $option, isset( $_POST[ $option ] ) ? '1' : '' );
+				continue;
+			}
+			if ( 'email' === $type ) {
+				update_option( $option, sanitize_email( $value ) );
+				continue;
+			}
+			if ( 'absint' === $type ) {
+				update_option( $option, absint( $value ) );
+				continue;
+			}
+			if ( 'key' === $type ) {
+				update_option( $option, sanitize_key( $value ) );
+				continue;
+			}
+			update_option( $option, sanitize_text_field( $value ) );
+		}
+	}
+
+	/**
 	 * Collect dashboard data.
 	 *
 	 * @return array
@@ -401,7 +563,7 @@ class DashboardPage {
 	private function dashboard_data() {
 		return array(
 			'total_forms'           => $this->forms->count_all(),
-			'total_entries'         => $this->submissions->count_all(),
+			'total_entries'         => count( $this->get_valid_submissions( -1 ) ),
 			'total_login_forms'     => $this->forms->count_by_type( 'login' ),
 			'total_register_forms'  => $this->forms->count_by_type( 'register' ),
 			'total_payment_forms'   => $this->forms->count_by_type( 'payment' ),
@@ -410,7 +572,7 @@ class DashboardPage {
 			'total_post_forms'      => $this->forms->count_by_type( 'frontend_post' ),
 			'total_email_sent'      => (int) get_option( 'csf_email_sent_count', 0 ),
 			'smtp_enabled'          => (bool) get_option( 'csf_enable_smtp' ),
-			'latest_submissions'    => $this->submissions->latest( 5 ),
+			'latest_submissions'    => $this->get_valid_submissions( 5 ),
 			'latest_frontend_posts' => $this->latest_frontend_posts(),
 			'latest_activity'       => $this->activity_logger->latest( 8 ),
 			'plugin_version'        => CSF_PLUGIN_VERSION,
@@ -440,5 +602,37 @@ class DashboardPage {
 				),
 			)
 		);
+	}
+
+	/**
+	 * Get submissions that contain actual saved form data.
+	 *
+	 * @param int $limit Number of submissions, or -1 for all.
+	 * @return array
+	 */
+	private function get_valid_submissions( $limit = 50 ) {
+		$raw_submissions = get_posts(
+			array(
+				'post_type'      => 'csf_submission',
+				'post_status'    => 'publish',
+				'posts_per_page' => -1 === $limit ? -1 : max( $limit * 3, 20 ),
+				'orderby'        => 'date',
+				'order'          => 'DESC',
+			)
+		);
+
+		$submissions = array();
+		foreach ( $raw_submissions as $submission ) {
+			$data = get_post_meta( $submission->ID, 'csf_data', true );
+			if ( empty( $data ) || ! is_array( $data ) ) {
+				continue;
+			}
+			$submissions[] = $submission;
+			if ( -1 !== $limit && count( $submissions ) >= $limit ) {
+				break;
+			}
+		}
+
+		return $submissions;
 	}
 }
