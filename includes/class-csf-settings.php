@@ -54,16 +54,19 @@ class CSF_Settings {
     }
 
     public function render_settings_page() {
-        $active_tab = isset( $_GET['tab'] ) ? sanitize_text_field( $_GET['tab'] ) : 'general';
+        $active_tab = isset( $_GET['csf_settings_tab'] ) ? sanitize_text_field( $_GET['csf_settings_tab'] ) : ( isset( $_GET['tab'] ) && $_GET['tab'] !== 'settings' ? sanitize_text_field( $_GET['tab'] ) : 'general' );
+        $base_url = isset( $_GET['page'] ) && $_GET['page'] === 'csf-dashboard'
+            ? admin_url( 'edit.php?post_type=csf_form&page=csf-dashboard&tab=settings' )
+            : admin_url( 'edit.php?post_type=csf_form&page=csf-settings' );
         ?>
         <div class="wrap csf-admin-settings">
             <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
             <h2 class="nav-tab-wrapper">
-                <a href="?post_type=csf_form&page=csf-settings&tab=general" class="nav-tab <?php echo $active_tab == 'general' ? 'nav-tab-active' : ''; ?>"><?php _e( 'General', 'cotlas-simple-forms' ); ?></a>
-                <a href="?post_type=csf_form&page=csf-settings&tab=email" class="nav-tab <?php echo $active_tab == 'email' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Email', 'cotlas-simple-forms' ); ?></a>
-                <a href="?post_type=csf_form&page=csf-settings&tab=security" class="nav-tab <?php echo $active_tab == 'security' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Security', 'cotlas-simple-forms' ); ?></a>
-                <a href="?post_type=csf_form&page=csf-settings&tab=uploads" class="nav-tab <?php echo $active_tab == 'uploads' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Uploads', 'cotlas-simple-forms' ); ?></a>
-                <a href="?post_type=csf_form&page=csf-settings&tab=frontend" class="nav-tab <?php echo $active_tab == 'frontend' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Frontend', 'cotlas-simple-forms' ); ?></a>
+                <a href="<?php echo esc_url( add_query_arg( 'csf_settings_tab', 'general', $base_url ) ); ?>" class="nav-tab <?php echo $active_tab == 'general' ? 'nav-tab-active' : ''; ?>"><?php _e( 'General', 'cotlas-simple-forms' ); ?></a>
+                <a href="<?php echo esc_url( add_query_arg( 'csf_settings_tab', 'email', $base_url ) ); ?>" class="nav-tab <?php echo $active_tab == 'email' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Email', 'cotlas-simple-forms' ); ?></a>
+                <a href="<?php echo esc_url( add_query_arg( 'csf_settings_tab', 'security', $base_url ) ); ?>" class="nav-tab <?php echo $active_tab == 'security' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Security', 'cotlas-simple-forms' ); ?></a>
+                <a href="<?php echo esc_url( add_query_arg( 'csf_settings_tab', 'uploads', $base_url ) ); ?>" class="nav-tab <?php echo $active_tab == 'uploads' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Uploads', 'cotlas-simple-forms' ); ?></a>
+                <a href="<?php echo esc_url( add_query_arg( 'csf_settings_tab', 'frontend', $base_url ) ); ?>" class="nav-tab <?php echo $active_tab == 'frontend' ? 'nav-tab-active' : ''; ?>"><?php _e( 'Frontend', 'cotlas-simple-forms' ); ?></a>
             </h2>
 
             <form action="options.php" method="post">
@@ -217,7 +220,7 @@ class CSF_Settings {
                     <?php endif; ?>
                 </table>
                 <p class="submit">
-                    <input type="hidden" name="tab" value="<?php echo esc_attr( $active_tab ); ?>" />
+                    <input type="hidden" name="csf_settings_tab" value="<?php echo esc_attr( $active_tab ); ?>" />
                     <?php submit_button( __( 'Save Changes', 'cotlas-simple-forms' ), 'primary', 'submit', false ); ?>
                 </p>
             </form>

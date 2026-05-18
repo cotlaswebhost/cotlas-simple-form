@@ -222,6 +222,8 @@ class CSF_Post_Types {
         echo '<option value="normal"' . selected( $form_type, 'normal', false ) . '>' . esc_html__( 'Normal (contact/enquiry)', 'cotlas-simple-forms' ) . '</option>';
         echo '<option value="login"' . selected( $form_type, 'login', false ) . '>' . esc_html__( 'Login form', 'cotlas-simple-forms' ) . '</option>';
         echo '<option value="register"' . selected( $form_type, 'register', false ) . '>' . esc_html__( 'Registration form', 'cotlas-simple-forms' ) . '</option>';
+        echo '<option value="payment"' . selected( $form_type, 'payment', false ) . '>' . esc_html__( 'Payment form', 'cotlas-simple-forms' ) . '</option>';
+        echo '<option value="donation"' . selected( $form_type, 'donation', false ) . '>' . esc_html__( 'Donation form', 'cotlas-simple-forms' ) . '</option>';
         echo '<option value="frontend_post"' . selected( $form_type, 'frontend_post', false ) . '>' . esc_html__( 'Frontend Add Post Form', 'cotlas-simple-forms' ) . '</option>';
         echo '</select>';
         echo '</p>';
@@ -360,6 +362,15 @@ class CSF_Post_Types {
         echo '<p>';
         echo '<label for="csf_form_email_subject">' . __( 'Subject', 'cotlas-simple-forms' ) . '</label>';
         echo '<input type="text" name="csf_form_email_subject" id="csf_form_email_subject" value="' . esc_attr( $email_subject ) . '" class="widefat">';
+        echo '</p>';
+
+        echo '<hr>';
+
+        echo '<p><strong>' . __( 'Payment and Donation Redirect', 'cotlas-simple-forms' ) . '</strong></p>';
+        echo '<p>';
+        echo '<label for="csf_form_redirect_url">' . __( 'Redirect URL after submission', 'cotlas-simple-forms' ) . '</label>';
+        echo '<input type="url" name="csf_form_redirect_url" id="csf_form_redirect_url" value="' . esc_attr( get_post_meta( $post->ID, 'csf_form_redirect_url', true ) ) . '" class="widefat" placeholder="https://">';
+        echo '<span class="description">' . esc_html__( 'Use this for payment gateways, donation links, or any thank-you page. It also works for normal forms.', 'cotlas-simple-forms' ) . '</span>';
         echo '</p>';
 
         echo '<hr>';
@@ -509,6 +520,9 @@ class CSF_Post_Types {
 
         $register_redirect = isset( $_POST['csf_form_register_redirect'] ) ? absint( $_POST['csf_form_register_redirect'] ) : 0;
         update_post_meta( $post_id, 'csf_form_register_redirect', $register_redirect );
+
+        $redirect_url = isset( $_POST['csf_form_redirect_url'] ) ? esc_url_raw( $_POST['csf_form_redirect_url'] ) : '';
+        update_post_meta( $post_id, 'csf_form_redirect_url', $redirect_url );
 
         $mail2_enable = isset( $_POST['csf_form_mail2_enable'] ) ? '1' : '';
         update_post_meta( $post_id, 'csf_form_mail2_enable', $mail2_enable );

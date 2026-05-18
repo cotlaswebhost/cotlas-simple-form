@@ -9,6 +9,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+$active_tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'overview';
+$tabs       = array(
+	'overview'        => __( 'Dashboard', 'cotlas-simple-forms' ),
+	'all_forms'       => __( 'All Forms', 'cotlas-simple-forms' ),
+	'add_form'        => __( 'Add Form', 'cotlas-simple-forms' ),
+	'settings'        => __( 'Settings', 'cotlas-simple-forms' ),
+	'submissions'     => __( 'Submissions', 'cotlas-simple-forms' ),
+	'email_templates' => __( 'Email Templates', 'cotlas-simple-forms' ),
+	'activity_log'    => __( 'Activity Log', 'cotlas-simple-forms' ),
+);
+
 $cards = array(
 	array(
 		'label' => __( 'Total Forms', 'cotlas-simple-forms' ),
@@ -29,6 +40,16 @@ $cards = array(
 		'label' => __( 'Registration Forms', 'cotlas-simple-forms' ),
 		'value' => $data['total_register_forms'],
 		'icon'  => 'dashicons-admin-users',
+	),
+	array(
+		'label' => __( 'Payment Forms', 'cotlas-simple-forms' ),
+		'value' => $data['total_payment_forms'],
+		'icon'  => 'dashicons-money-alt',
+	),
+	array(
+		'label' => __( 'Donation Forms', 'cotlas-simple-forms' ),
+		'value' => $data['total_donation_forms'],
+		'icon'  => 'dashicons-heart',
 	),
 	array(
 		'label' => __( 'Contact Forms', 'cotlas-simple-forms' ),
@@ -86,6 +107,37 @@ $cards = array(
 			<?php esc_html_e( 'Settings', 'cotlas-simple-forms' ); ?>
 		</a>
 	</div>
+
+	<nav class="csf-dashboard-tabs" aria-label="<?php esc_attr_e( 'Cotlas Forms Sections', 'cotlas-simple-forms' ); ?>">
+		<?php foreach ( $tabs as $tab_key => $tab_label ) : ?>
+			<a class="<?php echo esc_attr( $active_tab === $tab_key ? 'is-active' : '' ); ?>" href="<?php echo esc_url( add_query_arg( array( 'post_type' => 'csf_form', 'page' => 'csf-dashboard', 'tab' => $tab_key ), admin_url( 'edit.php' ) ) ); ?>">
+				<?php echo esc_html( $tab_label ); ?>
+			</a>
+		<?php endforeach; ?>
+	</nav>
+
+	<?php if ( 'all_forms' === $active_tab ) : ?>
+		<iframe class="csf-dashboard-frame" src="<?php echo esc_url( admin_url( 'edit.php?post_type=csf_form&csf_dashboard_frame=1' ) ); ?>" title="<?php esc_attr_e( 'All Forms', 'cotlas-simple-forms' ); ?>"></iframe>
+	<?php elseif ( 'add_form' === $active_tab ) : ?>
+		<iframe class="csf-dashboard-frame" src="<?php echo esc_url( admin_url( 'post-new.php?post_type=csf_form&csf_dashboard_frame=1' ) ); ?>" title="<?php esc_attr_e( 'Add Form', 'cotlas-simple-forms' ); ?>"></iframe>
+	<?php elseif ( 'settings' === $active_tab ) : ?>
+		<div class="csf-dashboard-tab-panel">
+			<?php ( new CSF_Settings() )->render_settings_page(); ?>
+		</div>
+	<?php elseif ( 'submissions' === $active_tab ) : ?>
+		<div class="csf-dashboard-tab-panel">
+			<?php ( new CSF_Admin_List() )->render_list_page(); ?>
+		</div>
+	<?php elseif ( 'email_templates' === $active_tab ) : ?>
+		<div class="csf-dashboard-tab-panel">
+			<?php include CSF_PLUGIN_DIR . 'templates/admin/email-templates.php'; ?>
+		</div>
+	<?php elseif ( 'activity_log' === $active_tab ) : ?>
+		<div class="csf-dashboard-tab-panel">
+			<?php $logs = isset( $this ) ? $this->activity_logger->latest( 100 ) : array(); ?>
+			<?php include CSF_PLUGIN_DIR . 'templates/admin/activity-log.php'; ?>
+		</div>
+	<?php else : ?>
 
 	<div class="csf-stats-grid">
 		<?php foreach ( $cards as $card ) : ?>
@@ -170,4 +222,5 @@ $cards = array(
 			<?php endif; ?>
 		</div>
 	</div>
+	<?php endif; ?>
 </div>

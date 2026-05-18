@@ -214,6 +214,10 @@ class CSF_Submission {
             if ( $thank_referrer === '1' ) {
                 $data['thankyou_use_referrer'] = true;
             }
+            $redirect_url = get_post_meta( $form_id, 'csf_form_redirect_url', true );
+            if ( $redirect_url ) {
+                $data['redirect_url'] = esc_url_raw( $redirect_url );
+            }
             wp_send_json_success( $data );
         } else {
             wp_send_json_error( array( 'message' => 'Failed to save submission.' ) );
