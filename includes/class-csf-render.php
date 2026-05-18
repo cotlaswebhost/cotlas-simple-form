@@ -68,12 +68,19 @@ class CSF_Render {
         $content = parse_blocks( $post->post_content );
         
         $has_block_editor = false;
-        foreach ( $content as $block ) {
-            if ( $block['blockName'] === 'csf/textarea' && ! empty( $block['attrs']['useTinyMCE'] ) ) {
-                $has_block_editor = true;
-                break;
+        
+        $check_blocks = function( $blocks ) use ( &$check_blocks, &$has_block_editor ) {
+            foreach ( $blocks as $block ) {
+                if ( $block['blockName'] === 'csf/field' && ! empty( $block['attrs']['useTinyMCE'] ) ) {
+                    $has_block_editor = true;
+                    return;
+                }
+                if ( ! empty( $block['innerBlocks'] ) ) {
+                    $check_blocks( $block['innerBlocks'] );
+                }
             }
-        }
+        };
+        $check_blocks( $content );
         
         if ( $has_block_editor ) {
             wp_enqueue_script( 'wp-edit-post' );
@@ -83,6 +90,7 @@ class CSF_Render {
             wp_enqueue_style( 'wp-components' );
         }
 
+        
         $inline_css = $this->collect_custom_css_from_blocks( $content );
 
         $steps = array();

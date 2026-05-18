@@ -325,6 +325,7 @@ class CSF_Blocks {
             }
         }
 
+        
         switch ( $type ) {
             case 'textarea':
                 if ( ! empty( $attributes['useTinyMCE'] ) ) {
@@ -332,8 +333,8 @@ class CSF_Blocks {
                     $html .= '<textarea name="' . esc_attr( $name ) . '" id="' . esc_attr( $unique_id ) . '" style="display:none;" ' . $required . '>' . esc_textarea( $value ) . '</textarea>';
                     $html .= '<script>
                         document.addEventListener("DOMContentLoaded", function() {
-                            if (typeof wp !== "undefined" && wp.editPost) {
-                                wp.domReady(function() {
+                            function initBlockEditor() {
+                                if (typeof wp !== "undefined" && wp.editPost) {
                                     var editorId = "' . esc_js( $unique_id ) . '_editor";
                                     var textareaId = "' . esc_js( $unique_id ) . '";
                                     var initialContent = document.getElementById(textareaId).value;
@@ -347,8 +348,11 @@ class CSF_Blocks {
                                         var content = wp.data.select("core/editor").getEditedPostContent();
                                         document.getElementById(textareaId).value = content;
                                     });
-                                });
+                                } else {
+                                    setTimeout(initBlockEditor, 100);
+                                }
                             }
+                            initBlockEditor();
                         });
                     </script>';
                 } else {
