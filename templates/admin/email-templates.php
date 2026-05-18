@@ -32,11 +32,9 @@ $post_template = get_option( 'csf_email_template_frontend_post', $default_post )
         <code>{your_field_name}</code> - <?php esc_html_e( 'Replace "your_field_name" with the exact Name of a field (e.g., {email}, {first_name}) to output its value.', 'cotlas-simple-forms' ); ?>
     </p>
 
-	<form action="options.php" method="post">
-		<?php
-		settings_fields( 'csf_email_templates_group' );
-		do_settings_sections( 'csf_email_templates_group' );
-		?>
+	<form class="csf-dashboard-settings-form" data-csf-settings-form>
+		<input type="hidden" name="section" value="email_templates">
+		<div data-csf-settings-result></div>
 		<table class="form-table">
             <tr>
 				<th scope="row"><?php _e( 'Admin Notification Email', 'cotlas-simple-forms' ); ?></th>
@@ -75,6 +73,8 @@ $post_template = get_option( 'csf_email_template_frontend_post', $default_post )
 				</td>
 			</tr>
 		</table>
-		<?php submit_button( __( 'Save Templates', 'cotlas-simple-forms' ) ); ?>
+		<p class="submit">
+			<button type="submit" class="button button-primary"><?php esc_html_e( 'Save Templates', 'cotlas-simple-forms' ); ?></button>
+		</p>
 	</form>
 </div>

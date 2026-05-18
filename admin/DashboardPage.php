@@ -223,6 +223,14 @@ class DashboardPage {
 					'csf_from_name'      => 'text',
 				)
 			);
+		} elseif ( 'email_templates' === $section ) {
+			$this->save_option_values(
+				array(
+					'csf_email_template_admin_notification' => 'html',
+					'csf_email_template_user_confirmation'  => 'html',
+					'csf_email_template_frontend_post'      => 'html',
+				)
+			);
 		} else {
 			$this->save_option_values(
 				array(
@@ -549,6 +557,10 @@ class DashboardPage {
 			}
 			if ( 'key' === $type ) {
 				update_option( $option, sanitize_key( $value ) );
+				continue;
+			}
+			if ( 'html' === $type ) {
+				update_option( $option, wp_kses_post( $value ) );
 				continue;
 			}
 			update_option( $option, sanitize_text_field( $value ) );

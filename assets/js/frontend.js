@@ -781,6 +781,10 @@ jQuery(document).ready(function($) {
     $('.csf-form').on('submit', function(e) {
         e.preventDefault();
         
+        if (typeof tinyMCE !== 'undefined') {
+            tinyMCE.triggerSave();
+        }
+
         var $form = $(this);
         var $msg = $form.find('.csf-response-message');
         $msg.removeClass('error success').text('');

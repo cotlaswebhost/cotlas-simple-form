@@ -53,6 +53,7 @@
             conditionalField: { type: 'string', default: '' },
             conditionalOperator: { type: 'string', default: 'equals' },
             conditionalValue: { type: 'string', default: '' },
+            useTinyMCE: { type: 'boolean', default: false },
         },
         edit: function( props ) {
             var attributes = props.attributes;
@@ -481,6 +482,12 @@
                             help: 'You can use {post_title} to dynamically insert the current page title.',
                             value: attributes.placeholder,
                             onChange: function( val ) { props.setAttributes( { placeholder: val } ); }
+                        } ),
+                        attributes.type === 'textarea' && el( CheckboxControl, {
+                            label: 'Use TinyMCE Editor',
+                            help: 'Render as a rich text editor instead of a plain textarea.',
+                            checked: attributes.useTinyMCE,
+                            onChange: function( val ) { props.setAttributes( { useTinyMCE: val } ); }
                         } ),
                         ( attributes.type === 'address' || attributes.type === 'google_address' ) && el(
                             PanelBody,

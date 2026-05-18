@@ -327,7 +327,20 @@ class CSF_Blocks {
 
         switch ( $type ) {
             case 'textarea':
-                $html .= '<textarea name="' . esc_attr( $name ) . '" id="' . esc_attr( $unique_id ) . '" placeholder="' . esc_attr( $placeholder ) . '" ' . $required . '>' . esc_textarea( $value ) . '</textarea>';
+                if ( ! empty( $attributes['useTinyMCE'] ) ) {
+                    ob_start();
+                    wp_editor( $value, $unique_id, array(
+                        'textarea_name' => $name,
+                        'media_buttons' => false,
+                        'textarea_rows' => 5,
+                        'teeny'         => true,
+                        'quicktags'     => true,
+                        'editor_class'  => 'csf-tinymce-editor'
+                    ) );
+                    $html .= ob_get_clean();
+                } else {
+                    $html .= '<textarea name="' . esc_attr( $name ) . '" id="' . esc_attr( $unique_id ) . '" placeholder="' . esc_attr( $placeholder ) . '" ' . $required . '>' . esc_textarea( $value ) . '</textarea>';
+                }
                 break;
             case 'taxonomy_select2':
                 $select_class = 'csf-select2';
