@@ -916,13 +916,16 @@ label .required {
     background: #fff;
     padding: 10px;
     min-height: 300px;
+    width: 100%;
+    box-sizing: border-box;
+    display: block;
 }
 
 .csf-editorjs-container .ce-block__content,
 .csf-editorjs-container .ce-toolbar__content {
-    max-width: calc(100% - 80px);
+    max-width: calc(100% - 50px); /* Leave room for the left toolbar */
+    margin-left: 50px; /* Force left alignment rather than center */
 }
-
 /* Preview mode styling */
 .csf-field-preview .csf-editorjs-preview {
     border: 1px solid #eee;

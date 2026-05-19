@@ -54,6 +54,7 @@
             conditionalOperator: { type: 'string', default: 'equals' },
             conditionalValue: { type: 'string', default: '' },
             useTinyMCE: { type: 'boolean', default: false },
+            useEditorJS: { type: 'boolean', default: false },
         },
         edit: function( props ) {
             var attributes = props.attributes;
@@ -488,6 +489,12 @@
                             help: 'Render as a rich text editor instead of a plain textarea.',
                             checked: attributes.useTinyMCE,
                             onChange: function( val ) { props.setAttributes( { useTinyMCE: val } ); }
+                        } ),
+                        attributes.type === 'textarea' && el( CheckboxControl, {
+                            label: 'Use Block Editor (Editor.js)',
+                            help: 'Render as a modern block editor instead of a plain textarea.',
+                            checked: attributes.useEditorJS,
+                            onChange: function( val ) { props.setAttributes( { useEditorJS: val } ); }
                         } ),
                         ( attributes.type === 'address' || attributes.type === 'google_address' ) && el(
                             PanelBody,

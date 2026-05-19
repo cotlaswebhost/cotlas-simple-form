@@ -12,7 +12,7 @@
         formData.append('nonce', csfEditorJS.uploadNonce);
         
         try {
-            const response = await fetch(csfEditorJS.ajaxUrl, {
+            const response = await fetch(csfEditorJS.uploadUrl, {
                 method: 'POST',
                 body: formData
             });
