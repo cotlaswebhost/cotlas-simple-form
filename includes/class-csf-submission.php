@@ -593,7 +593,33 @@ class CSF_Submission {
             $post_data['post_author'] = get_current_user_id();
         }
 
-        $new_post_id = wp_insert_post( $post_data, true );
+        $edit_post_id = isset($_POST['edit_post_id']) ? absint( $_POST['edit_post_id'] ) : 0;
+        /*
+        security check
+        */
+        if(
+        $edit_post_id
+        ){
+
+        if(
+        current_user_can(
+        'edit_post',
+        $edit_post_id
+        )
+        ){
+        $post_data['ID']=$edit_post_id;
+        $new_post_id=wp_update_post($post_data,true);
+
+        }else{
+
+        return;
+
+        }
+
+        }else{
+
+        $new_post_id=wp_insert_post($post_data,true);
+        }
 
         if ( is_wp_error( $new_post_id ) ) {
             wp_send_json_error( array( 'message' => $new_post_id->get_error_message() ) );

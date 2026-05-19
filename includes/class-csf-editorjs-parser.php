@@ -491,5 +491,124 @@ $block['type']
         return $content;
 
     }
+    public static function gutenberg_to_editorjs(
+        $content
+    ){
+
+        $blocks = parse_blocks(
+            $content
+        );
+
+        $editor_blocks=[];
+
+        foreach(
+            $blocks as $block
+        ){
+
+            switch(
+                $block['blockName']
+            ){
+
+                case 'core/paragraph':
+
+                    $editor_blocks[]=[
+
+                        'type'=>'paragraph',
+
+                        'data'=>[
+                            'text'=>wp_strip_all_tags(
+                                $block['innerHTML']
+                            )
+                        ]
+
+                    ];
+
+                break;
+
+
+                case 'core/heading':
+
+                    preg_match(
+                        '/<h([1-6])/',
+                        $block['innerHTML'],
+                        $matches
+                    );
+
+                    $level=
+                    $matches[1] ?? 2;
+
+                    $editor_blocks[]=[
+
+                        'type'=>'header',
+
+                        'data'=>[
+
+                            'text'=>
+                            wp_strip_all_tags(
+                                $block['innerHTML']
+                            ),
+
+                            'level'=>
+                            intval(
+                                $level
+                            )
+
+                        ]
+
+                    ];
+
+                break;
+
+
+                case 'core/image':
+
+                    preg_match(
+                        '/src="([^"]+)"/',
+                        $block['innerHTML'],
+                        $matches
+                    );
+
+                    $url=
+                    $matches[1] ?? '';
+
+                    $editor_blocks[]=[
+
+                        'type'=>'image',
+
+                        'data'=>[
+
+                            'file'=>[
+                                'url'=>$url
+                            ],
+
+                            'caption'=>'',
+
+                            'withBorder'=>false,
+
+                            'withBackground'=>false,
+
+                            'stretched'=>false
+
+                        ]
+
+                    ];
+
+                break;
+
+            }
+
+        }
+
+        return wp_json_encode([
+
+            'time'=>time(),
+
+            'blocks'=>$editor_blocks,
+
+            'version'=>'2.30.0'
+
+        ]);
+
+    }
 
 }

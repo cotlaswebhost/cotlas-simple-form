@@ -100,6 +100,8 @@ class CSF_Blocks {
                 'useEditorJS' => array( 'type' => 'boolean', 'default' => false ),
                 'useTinyMCE' => array( 'type' => 'boolean', 'default' => false ),
                 'helpText' => array( 'type' => 'string', 'default' => '' ),
+                'postMetaTarget' => array('type'=>'string','default'=>''),
+                'postMetaKey' => array('type'=>'string','default'=>''),
             ),
             'render_callback' => array( $this, 'render_field_block' ),
         ) );
@@ -238,7 +240,102 @@ class CSF_Blocks {
         
         $value = '';
 
-        $form_id = isset( $GLOBALS['csf_current_form_id'] ) ? intval( $GLOBALS['csf_current_form_id'] ) : 0;
+        /*
+        |--------------------------------------------------------------------------
+        | Frontend edit mode prefill
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            ! empty( $GLOBALS['csf_edit_post'] )
+        ) {
+
+            $edit_post = $GLOBALS['csf_edit_post'];
+
+            /*
+            Standard WP fields
+            */
+
+            if (
+                ! empty( $attributes['postMetaTarget'] )
+            ) {
+
+                switch (
+                    $attributes['postMetaTarget']
+                ) {
+
+                    case 'post_title':
+
+                        $value =
+                            $edit_post->post_title;
+
+                    break;
+
+
+                    case 'post_excerpt':
+
+                        $value =
+                            $edit_post->post_excerpt;
+
+                    break;
+
+
+                    case 'post_content':
+
+                    if(
+                    class_exists(
+                    'CSF_EditorJS_Parser'
+                    )
+                    ){
+
+                    $value=
+                    CSF_EditorJS_Parser::
+                    gutenberg_to_editorjs(
+                    $edit_post->post_content
+                    );
+
+                    }else{
+
+                    $value=
+                    $edit_post->post_content;
+
+                    }
+
+                    break;
+
+
+                    case 'meta':
+
+                        if (
+                            ! empty(
+                                $attributes['postMetaKey']
+                            )
+                        ) {
+
+                            $value =
+                                get_post_meta(
+
+                                    $edit_post->ID,
+
+                                    $attributes['postMetaKey'],
+
+                                    true
+
+                                );
+
+                        }
+
+                    break;
+
+                }
+
+            }
+
+        }
+
+        $form_id = isset( $GLOBALS['csf_current_form_id'] )
+        ? intval( $GLOBALS['csf_current_form_id'] )
+        : 0;
         $label_mode = $form_id ? get_post_meta( $form_id, 'csf_form_label_mode', true ) : '';
         $hide_help_when_label = $form_id ? get_post_meta( $form_id, 'csf_form_hide_help_when_label', true ) : '';
         $hide_help_all = $form_id ? get_post_meta( $form_id, 'csf_form_hide_help_all', true ) : '';

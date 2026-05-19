@@ -54,6 +54,55 @@ class CSF_Render {
         }
 
         $GLOBALS['csf_current_form_id'] = (int) $atts['id'];
+                /*
+        |--------------------------------------------------------------------------
+        | Frontend edit mode detection
+        |--------------------------------------------------------------------------
+        */
+
+        $csf_edit_post_id =
+            isset($_GET['post'])
+            ? absint($_GET['post'])
+            : 0;
+
+        $csf_edit_post=false;
+
+        if(
+            $csf_edit_post_id
+        ){
+
+            $csf_edit_post=
+            get_post(
+                $csf_edit_post_id
+            );
+
+            /*
+            Security:
+            allow only author/admin
+            */
+
+            if(
+                !$csf_edit_post
+                ||
+                (
+                    !current_user_can(
+                        'edit_post',
+                        $csf_edit_post_id
+                    )
+                )
+            ){
+
+                $csf_edit_post=false;
+
+            }
+
+        }
+
+        /*
+        Global for field blocks
+        */
+
+        $GLOBALS['csf_edit_post']=$csf_edit_post;
 
         wp_enqueue_script( 'csf-frontend' );
         wp_enqueue_style( 'csf-frontend-css' );
@@ -164,6 +213,9 @@ class CSF_Render {
             <?php endif; ?>
             <form class="csf-form" data-id="<?php echo esc_attr( $atts['id'] ); ?>" enctype="multipart/form-data" data-keep-session="<?php echo esc_attr( $keep_session_data === '1' ? '1' : '' ); ?>" data-form-type="<?php echo esc_attr( $form_type ); ?>">
                 <input type="hidden" name="form_id" value="<?php echo esc_attr( $atts['id'] ); ?>">
+                <?php if($csf_edit_post): ?>
+                <input type="hidden" name="edit_post_id" value="<?php echo esc_attr($csf_edit_post->ID); ?>">
+                <?php endif; ?>
                 <input type="hidden" name="action" value="csf_submit_form">
                 <input type="hidden" name="page_url" value="<?php echo esc_attr( get_permalink() ); ?>">
                 <input type="hidden" name="page_title" value="<?php echo esc_attr( get_the_title() ); ?>">
