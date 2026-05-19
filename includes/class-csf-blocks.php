@@ -340,15 +340,9 @@ class CSF_Blocks {
                     $editor_id = $unique_id . '_editorjs';
                     
                     // Custom Toolbar
-                    $html .= '<div class="csf-editorjs-custom-toolbar" style="border: 1px solid #ddd; border-bottom: none; background: #f7f7f7; padding: 8px 10px; border-radius: 4px 4px 0 0; display: flex; gap: 10px; align-items: center;">';
-                    $html .= '<button type="button" class="csf-editorjs-media-btn" data-editor="' . esc_attr($editor_id) . '" style="background: #fff; border: 1px solid #ccc; padding: 4px 10px; border-radius: 3px; cursor: pointer; display: flex; align-items: center; gap: 5px; font-size: 13px;">';
-                    $html .= '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>';
-                    $html .= ' Add Media</button>';
-                    $html .= '<input type="file" class="csf-editorjs-media-input" data-editor="' . esc_attr($editor_id) . '" accept="image/*" style="display: none;">';
-                    $html .= '</div>';
+                    $html .= '<div  id="' . esc_attr($editor_id) . '"  class="csf-editorjs-container"  data-textarea-id="' . esc_attr($unique_id) . '" style="border:1px solid #ddd;border-radius:4px;min-height:300px;background:#fff;"> </div>';
 
-                    $html .= '<div id="' . esc_attr($editor_id) . '" class="csf-editorjs-container" data-textarea-id="' . esc_attr($unique_id) . '" style="border: 1px solid #ddd; border-radius: 0 0 4px 4px; min-height: 300px; background: #fff;"></div>';
-                    $html .= '<textarea name="' . esc_attr($name) . '" id="' . esc_attr($unique_id) . '" style="display:none;" ' . $required . '>' . esc_textarea($value) . '</textarea>';
+                    $html .= '<textarea name="' . esc_attr($name) . '"  id="' . esc_attr($unique_id) . '"  style="display:none;" ' . $required . '>' . esc_textarea($value) . '</textarea>';
                 } else {
                     // Regular textarea
                     $html .= '<textarea name="' . esc_attr($name) . '" id="' . esc_attr($unique_id) . '" placeholder="' . esc_attr($placeholder) . '" ' . $required . ' rows="5">' . esc_textarea($value) . '</textarea>';

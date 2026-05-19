@@ -107,7 +107,7 @@ templates/   Admin templates
 
 ## Version
 
-Current version: `2.0.2`
+Current version: `2.0.3`
 
 ## Author
 

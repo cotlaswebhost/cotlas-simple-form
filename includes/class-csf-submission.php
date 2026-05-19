@@ -512,9 +512,52 @@ class CSF_Submission {
                         $value = $form_data[ $key ];
                         if ( $attrs['postMetaTarget'] === 'post_title' ) {
                             $post_title = $value;
-                        } elseif ( $attrs['postMetaTarget'] === 'post_content' ) {
-                            // Try reading the un-sanitized $_POST to preserve HTML if available
-                            $post_content = isset( $_POST[ $name ] ) ? wp_kses_post( $_POST[ $name ] ) : wp_kses_post( $value );
+                        } elseif ($attrs['postMetaTarget'] === 'post_content') {
+
+                            $post_content =
+                            isset($_POST[$name])
+
+                            ? wp_unslash($_POST[$name])
+
+                            : wp_unslash($value);
+
+                            /*
+                            detect EditorJS
+                            */
+
+                            if(
+                                strpos(
+                                    $post_content,
+                                    '"blocks"'
+                                )!==false
+                                &&
+                                class_exists(
+                                    'CSF_EditorJS_Parser'
+                                )
+                            ){
+
+                                $post_content=
+                                CSF_EditorJS_Parser::to_gutenberg(
+                                    $post_content
+                                );
+
+                            }
+                            else{
+
+                                $post_content=
+                                wp_kses_post(
+                                    $post_content
+                                );
+
+                            }
+
+                        };
+                        elseif ( $attrs['postMetaTarget'] === 'post_excerpt' ) {
+                            $post_excerpt = $value;
+                        } elseif ( $attrs['postMetaTarget'] === 'post_status' ) {
+                            $post_status = $value;
+                        } elseif ( $attrs['postMetaTarget'] === 'post_type' ) {
+                            $post_type = $value;
                         } elseif ( $attrs['postMetaTarget'] === 'meta' && ! empty( $attrs['postMetaKey'] ) ) {
                             $meta_input[ $attrs['postMetaKey'] ] = $value;
                         }

@@ -19,149 +19,59 @@ class CSFEditorJS {
         
         // Default tools configuration with enhanced settings
         const defaultTools = {
-            header: {
-                class: Header,
-                inlineToolbar: true,  // Enable inline toolbar
-                config: {
-                    placeholder: 'Enter a header',
-                    levels: [1, 2, 3, 4, 5, 6],
-                    defaultLevel: 2
-                },
-                toolbox: {
-                    title: 'Header',
-                    icon: '<svg width="20" height="20" viewBox="0 0 20 20"><path d="M3 4h2v5h8V4h2v12h-2v-5H5v5H3V4z"/></svg>'
-                }
-            },
-            list: {
-                class: List,
-                inlineToolbar: true,
-                config: {
-                    defaultStyle: 'unordered'
-                },
-                toolbox: {
-                    title: 'List',
-                    icon: '<svg width="20" height="20" viewBox="0 0 20 20"><path d="M7 5h10v2H7V5zm0 4h10v2H7V9zm0 4h10v2H7v-2zM3 5h2v2H3V5zm0 4h2v2H3V9zm0 4h2v2H3v-2z"/></svg>'
-                }
-            },
+
             paragraph: {
                 class: Paragraph,
+                inlineToolbar: true
+            },
+
+            header: {
+                class: Header,
                 inlineToolbar: true,
-                config: {
-                    placeholder: 'Start writing your content...'
+                config:{
+                    levels:[1,2,3,4],
+                    defaultLevel:2
                 }
             },
-            image: {
+
+            list:{
+                class: List,
+                inlineToolbar:true
+            },
+
+            quote:{
+                class: Quote,
+                inlineToolbar:true
+            },
+
+            checklist:{
+                class: Checklist,
+                inlineToolbar:true
+            },
+
+            table:{
+                class: Table,
+                inlineToolbar:true
+            },
+
+            code:{
+                class: CodeTool
+            },
+
+            delimiter:{
+                class: Delimiter
+            },
+
+            image:{
                 class: ImageTool,
-                inlineToolbar: true,  // Enable inline toolbar for image captions
-                config: {
-                    uploader: {
-                        uploadByFile: window.csfEditorJS && window.csfEditorJS.uploadImage ? window.csfEditorJS.uploadImage : null
-                    },
-                    captionPlaceholder: 'Image caption...',
-                    // Enable image settings
-                    actions: ['stretch', 'border', 'background']
-                }
-            },
-            embed: {
-                class: Embed,
-                inlineToolbar: false,
-                config: {
-                    services: {
-                        youtube: true,
-                        vimeo: true,
-                        twitter: true,
-                        instagram: true,
-                        facebook: true,
-                        codepen: true,
-                        github: true,
-                        spotify: true
+                config:{
+                    uploader:{
+                        uploadByFile:file=>
+                            window.csfEditorJS.uploadImage(file)
                     }
                 }
-            },
-            table: {
-                class: Table,
-                inlineToolbar: true,
-                config: {
-                    rows: 2,
-                    cols: 3
-                }
-            },
-            delimiter: {
-                class: Delimiter,
-                toolbox: {
-                    title: 'Delimiter',
-                    icon: '<svg width="20" height="20" viewBox="0 0 20 20"><path d="M2 10h16M2 10l4-4m-4 4l4 4m12-4l-4-4m4 4l-4 4"/></svg>'
-                }
-            },
-            warning: {
-                class: Warning,
-                inlineToolbar: true,
-                config: {
-                    titlePlaceholder: 'Title',
-                    messagePlaceholder: 'Message'
-                }
-            },
-            code: {
-                class: CodeTool,
-                toolbox: {
-                    title: 'Code',
-                    icon: '<svg width="20" height="20" viewBox="0 0 20 20"><path d="M6 7l-5 5 5 5M14 7l5 5-5 5M8 3L12 17"/></svg>'
-                }
-            },
-            raw: {
-                class: RawTool,
-                toolbox: {
-                    title: 'HTML',
-                    icon: '<svg width="20" height="20" viewBox="0 0 20 20"><path d="M5 5l-4 5 4 5M15 5l4 5-4 5M9 2L11 18"/></svg>'
-                }
-            },
-            quote: {
-                class: Quote,
-                inlineToolbar: true,
-                config: {
-                    quotePlaceholder: 'Enter a quote',
-                    captionPlaceholder: 'Quote\'s author'
-                }
-            },
-            checklist: {
-                class: Checklist,
-                inlineToolbar: true
-            },
-            marker: {
-                class: Marker,
-                shortcut: 'CMD+SHIFT+M',
-                inlineToolbar: true
-            },
-            // Add inline code tool
-            inlineCode: {
-                class: InlineCode,
-                shortcut: 'CMD+SHIFT+C',
-                inlineToolbar: true,
-                toolbox: {
-                    title: 'Inline Code',
-                    icon: '<svg width="20" height="20" viewBox="0 0 20 20"><path d="M8 7l-5 5 5 5M12 7l5 5-5 5"/></svg>'
-                }
-            },
-            // Add underline tool
-            underline: {
-                class: Underline,
-                shortcut: 'CMD+U',
-                inlineToolbar: true,
-                toolbox: {
-                    title: 'Underline',
-                    icon: '<svg width="20" height="20" viewBox="0 0 20 20"><path d="M5 4v6c0 2.5 2 5 5 5s5-2.5 5-5V4h-2v6c0 1.5-1 3-3 3s-3-1.5-3-3V4H5zM4 15h12v2H4z"/></svg>'
-                }
-            },
-            // Add text-color tool
-            textColor: {
-                class: ColorPlugin,
-                config: {
-                   colorCollections: ['#000000', '#FF1300', '#EC7878','#9C27B0','#673AB7','#3F51B5','#0070FF','#03A9F4','#00BCD4','#4CAF50','#8BC34A','#CDDC39', '#FFF'],
-                   defaultColor: '#FF1300',
-                   type: 'text', 
-                   customPicker: true
-                }
             }
+
         };
         
         // Merge with custom tools if provided
@@ -186,121 +96,20 @@ class CSFEditorJS {
         }
         
         // Initialize Editor.js with enhanced configuration
-        this.editor = new EditorJS({
-            holder: this.containerId,
-            tools: tools,
-            data: initialData,
-            placeholder: this.config.placeholder || 'Start writing...',
-            autofocus: this.config.autofocus || false,
-            // Enable inline toolbar for all blocks that support it
-            inlineToolbar: ['link', 'marker', 'bold', 'italic', 'inlineCode', 'underline', 'textColor'],
-            // Enable block tunes menu
-            tunes: ['stretch', 'border', 'background'],
-            onChange: () => {
-                this.saveToTextarea();
-            },
-            // Add log level to see what's happening
-            logLevel: 'ERROR',
-            // i18n for better UX
-            i18n: {
-                messages: {
-                    ui: {
-                        blockTunes: {
-                            toggler: {
-                                'Click to tune': 'Click to tune',
-                                'or drag to move': 'or drag to move'
-                            }
-                        },
-                        inlineToolbar: {
-                            converter: {
-                                'Convert to': 'Convert to'
-                            }
-                        },
-                        toolbar: {
-                            toolbox: {
-                                'Add': 'Add'
-                            }
-                        }
-                    },
-                    toolNames: {
-                        'Text': 'Text',
-                        'Heading': 'Heading',
-                        'List': 'List',
-                        'Warning': 'Warning',
-                        'Code': 'Code',
-                        'Quote': 'Quote',
-                        'Image': 'Image',
-                        'Table': 'Table',
-                        'Link': 'Link',
-                        'Marker': 'Marker',
-                        'Bold': 'Bold',
-                        'Italic': 'Italic',
-                        'Inline Code': 'Inline Code',
-                        'Underline': 'Underline',
-                        'textColor': 'Text Color'
-                    }
-                }
+        this.editor=new EditorJS({
+            holder:this.containerId,
+            tools:tools,
+            data:initialData,
+            placeholder:'Start writing...',
+            autofocus:false,
+            inlineToolbar:true,
+            onChange:async()=>{
+                const data=await this.editor.save();
+                document.getElementById(
+                this.textareaId
+                ).value=JSON.stringify(data);
             }
         });
-        
-        // Setup tooltips for editor elements after initialization
-        this.setupTooltips();
-    }
-    
-    setupTooltips() {
-        // Wait for editor DOM to be ready
-        setTimeout(() => {
-            const editorElement = document.getElementById(this.containerId);
-            if (!editorElement) return;
-            
-            // Add tooltips to toolbar buttons
-            const toolbarButtons = editorElement.querySelectorAll('.ce-toolbar__settings-btn, .ce-toolbar__plus, .ce-toolbar__actions-btn');
-            
-            toolbarButtons.forEach(btn => {
-                // Store original title
-                const originalTitle = btn.getAttribute('title') || 
-                    (btn.classList.contains('ce-toolbar__settings-btn') ? 'Settings' :
-                     btn.classList.contains('ce-toolbar__plus') ? 'Add block' : 'Actions');
-                
-                // Apply tooltip on hover using Editor.js API if available
-                if (this.editor && this.editor.api && this.editor.api.tooltip) {
-                    btn.addEventListener('mouseenter', (e) => {
-                        this.editor.api.tooltip.show(btn, originalTitle, {
-                            placement: 'top',
-                            delay: 300
-                        });
-                    });
-                    btn.addEventListener('mouseleave', () => {
-                        if (this.editor && this.editor.api && this.editor.api.tooltip) {
-                            this.editor.api.tooltip.hide();
-                        }
-                    });
-                }
-            });
-            
-            // Add tooltips to block tunes
-            const tuneButtons = editorElement.querySelectorAll('.ce-popover-item, .ce-settings__button');
-            tuneButtons.forEach(btn => {
-                const tooltipText = btn.getAttribute('data-tune') || 
-                    (btn.innerHTML.includes('stretch') ? 'Stretch block' :
-                     btn.innerHTML.includes('border') ? 'Add border' :
-                     btn.innerHTML.includes('background') ? 'Add background' : 'Toggle setting');
-                
-                if (this.editor && this.editor.api && this.editor.api.tooltip) {
-                    btn.addEventListener('mouseenter', (e) => {
-                        this.editor.api.tooltip.show(btn, tooltipText, {
-                            placement: 'right',
-                            delay: 200
-                        });
-                    });
-                    btn.addEventListener('mouseleave', () => {
-                        if (this.editor && this.editor.api && this.editor.api.tooltip) {
-                            this.editor.api.tooltip.hide();
-                        }
-                    });
-                }
-            });
-        }, 500);
     }
     
     async saveToTextarea() {
