@@ -909,3 +909,36 @@ label .required {
 .csf-mobile .select2-container--default.select2-container--open .select2-selection--single .select2-selection__arrow b {
     border-color: transparent transparent #262424 transparent;
 }
+/* Editor.js frontend styling */
+.csf-editorjs-container {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #fff;
+    padding: 10px;
+    min-height: 300px;
+}
+
+.csf-editorjs-container .ce-block__content,
+.csf-editorjs-container .ce-toolbar__content {
+    max-width: calc(100% - 80px);
+}
+
+/* Preview mode styling */
+.csf-field-preview .csf-editorjs-preview {
+    border: 1px solid #eee;
+    border-radius: 4px;
+    padding: 15px;
+    background: #f9f9f9;
+    min-height: 150px;
+}
+
+.csf-field-preview .csf-editorjs-preview .ce-block {
+    margin-bottom: 10px;
+}
+
+.csf-field-preview .csf-editorjs-preview h1,
+.csf-field-preview .csf-editorjs-preview h2,
+.csf-field-preview .csf-editorjs-preview h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+}

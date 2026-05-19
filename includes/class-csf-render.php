@@ -275,4 +275,100 @@ class CSF_Render {
         }
         return $css;
     }
+    public function render_editorjs_content($content_json) {
+        if (empty($content_json)) {
+            return '';
+        }
+        
+        $data = json_decode($content_json, true);
+        if (!$data || empty($data['blocks'])) {
+            return wp_kses_post($content_json);
+        }
+        
+        $html = '<div class="csf-editorjs-content">';
+        
+        foreach ($data['blocks'] as $block) {
+            switch ($block['type']) {
+                case 'paragraph':
+                    $html .= '<p>' . wp_kses_post($block['data']['text']) . '</p>';
+                    break;
+                    
+                case 'header':
+                    $level = isset($block['data']['level']) ? $block['data']['level'] : 2;
+                    $html .= '<h' . $level . '>' . wp_kses_post($block['data']['text']) . '</h' . $level . '>';
+                    break;
+                    
+                case 'list':
+                    $items = $block['data']['items'];
+                    $style = $block['data']['style'] === 'ordered' ? 'ol' : 'ul';
+                    $html .= '<' . $style . '>';
+                    foreach ($items as $item) {
+                        $html .= '<li>' . wp_kses_post($item) . '</li>';
+                    }
+                    $html .= '</' . $style . '>';
+                    break;
+                    
+                case 'image':
+                    $caption = isset($block['data']['caption']) ? $block['data']['caption'] : '';
+                    $html .= '<figure class="csf-editorjs-image">';
+                    $html .= '<img src="' . esc_url($block['data']['file']['url']) . '" alt="' . esc_attr($caption) . '">';
+                    if ($caption) {
+                        $html .= '<figcaption>' . wp_kses_post($caption) . '</figcaption>';
+                    }
+                    $html .= '</figure>';
+                    break;
+                    
+                case 'quote':
+                    $html .= '<blockquote>';
+                    $html .= '<p>' . wp_kses_post($block['data']['text']) . '</p>';
+                    if ($block['data']['caption']) {
+                        $html .= '<cite>' . wp_kses_post($block['data']['caption']) . '</cite>';
+                    }
+                    $html .= '</blockquote>';
+                    break;
+                    
+                case 'code':
+                    $html .= '<pre><code>' . esc_html($block['data']['code']) . '</code></pre>';
+                    break;
+                    
+                case 'delimiter':
+                    $html .= '<hr class="csf-editorjs-delimiter">';
+                    break;
+                    
+                case 'checklist':
+                    $html .= '<ul class="csf-editorjs-checklist">';
+                    foreach ($block['data']['items'] as $item) {
+                        $checked = $item['checked'] ? 'checked' : '';
+                        $html .= '<li>';
+                        $html .= '<label>';
+                        $html .= '<input type="checkbox" ' . $checked . ' disabled> ';
+                        $html .= wp_kses_post($item['text']);
+                        $html .= '</label>';
+                        $html .= '</li>';
+                    }
+                    $html .= '</ul>';
+                    break;
+                    
+                case 'table':
+                    $html .= '<div class="csf-editorjs-table-wrapper"><table class="csf-editorjs-table">';
+                    foreach ($block['data']['content'] as $row) {
+                        $html .= '<tr>';
+                        foreach ($row as $cell) {
+                            $html .= '<td>' . wp_kses_post($cell) . '</td>';
+                        }
+                        $html .= '</tr>';
+                    }
+                    $html .= '</table></div>';
+                    break;
+                    
+                default:
+                    // Handle other block types or ignore
+                    break;
+            }
+        }
+        
+        $html .= '</div>';
+        
+        return $html;
+    }
 }

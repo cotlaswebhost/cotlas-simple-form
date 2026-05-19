@@ -97,6 +97,9 @@ class CSF_Blocks {
                 'conditionalOperator'=> array( 'type' => 'string', 'default' => 'equals' ),
                 'conditionalValue'   => array( 'type' => 'string', 'default' => '' ),
                 'taxonomyShowEmpty'  => array( 'type' => 'boolean', 'default' => true ),
+                'useEditorJS' => array( 'type' => 'boolean', 'default' => false ),
+                'useTinyMCE' => array( 'type' => 'boolean', 'default' => false ),
+                'helpText' => array( 'type' => 'string', 'default' => '' ),
             ),
             'render_callback' => array( $this, 'render_field_block' ),
         ) );
@@ -328,35 +331,18 @@ class CSF_Blocks {
         
         switch ( $type ) {
             case 'textarea':
-                if ( ! empty( $attributes['useTinyMCE'] ) ) {
-                    $html .= '<div id="' . esc_attr( $unique_id ) . '_editor" class="csf-block-editor-container" style="border: 1px solid #ccc; min-height: 200px;"></div>';
-                    $html .= '<textarea name="' . esc_attr( $name ) . '" id="' . esc_attr( $unique_id ) . '" style="display:none;" ' . $required . '>' . esc_textarea( $value ) . '</textarea>';
-                    $html .= '<script>
-                        document.addEventListener("DOMContentLoaded", function() {
-                            function initBlockEditor() {
-                                if (typeof wp !== "undefined" && wp.editPost) {
-                                    var editorId = "' . esc_js( $unique_id ) . '_editor";
-                                    var textareaId = "' . esc_js( $unique_id ) . '";
-                                    var initialContent = document.getElementById(textareaId).value;
-                                    
-                                    wp.editPost.initializeEditor(editorId, "post", 0, {
-                                        hasFixedToolbar: true,
-                                        focusMode: false
-                                    }, { content: initialContent });
-                                    
-                                    wp.data.subscribe(function() {
-                                        var content = wp.data.select("core/editor").getEditedPostContent();
-                                        document.getElementById(textareaId).value = content;
-                                    });
-                                } else {
-                                    setTimeout(initBlockEditor, 100);
-                                }
-                            }
-                            initBlockEditor();
-                        });
-                    </script>';
+                $use_editorjs = !empty($attributes['useEditorJS']) || !empty($attributes['useTinyMCE']);
+                
+                if ($use_editorjs) {
+                    // Enqueue Editor.js assets
+                    $this->enqueue_editorjs_assets();
+                    
+                    $editor_id = $unique_id . '_editorjs';
+                    $html .= '<div id="' . esc_attr($editor_id) . '" class="csf-editorjs-container" data-textarea-id="' . esc_attr($unique_id) . '" style="border: 1px solid #ddd; border-radius: 4px; min-height: 300px; background: #fff;"></div>';
+                    $html .= '<textarea name="' . esc_attr($name) . '" id="' . esc_attr($unique_id) . '" style="display:none;" ' . $required . '>' . esc_textarea($value) . '</textarea>';
                 } else {
-                    $html .= '<textarea name="' . esc_attr( $name ) . '" id="' . esc_attr( $unique_id ) . '" placeholder="' . esc_attr( $placeholder ) . '" ' . $required . '>' . esc_textarea( $value ) . '</textarea>';
+                    // Regular textarea
+                    $html .= '<textarea name="' . esc_attr($name) . '" id="' . esc_attr($unique_id) . '" placeholder="' . esc_attr($placeholder) . '" ' . $required . ' rows="5">' . esc_textarea($value) . '</textarea>';
                 }
                 break;
             case 'taxonomy_select2':
@@ -1241,5 +1227,67 @@ class CSF_Blocks {
             'ZM' => 'Zambia',
             'ZW' => 'Zimbabwe',
         );
+    }
+    // Add this method to CSF_Blocks class
+    public function enqueue_editorjs_assets() {
+        // Enqueue Editor.js core
+        wp_enqueue_script(
+            'editorjs-core',
+            'https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest/dist/editorjs.umd.min.js',
+            array(),
+            '2.30.0',
+            true
+        );
+        
+        // Enqueue Editor.js tools
+        $tools = array(
+            'header' => 'https://cdn.jsdelivr.net/npm/@editorjs/header@latest/dist/header.umd.min.js',
+            'list' => 'https://cdn.jsdelivr.net/npm/@editorjs/list@latest/dist/list.umd.min.js',
+            'paragraph' => 'https://cdn.jsdelivr.net/npm/@editorjs/paragraph@latest/dist/paragraph.umd.min.js',
+            'image' => 'https://cdn.jsdelivr.net/npm/@editorjs/image@latest/dist/image.umd.min.js',
+            'embed' => 'https://cdn.jsdelivr.net/npm/@editorjs/embed@latest/dist/embed.umd.min.js',
+            'table' => 'https://cdn.jsdelivr.net/npm/@editorjs/table@latest/dist/table.umd.min.js',
+            'delimiter' => 'https://cdn.jsdelivr.net/npm/@editorjs/delimiter@latest/dist/delimiter.umd.min.js',
+            'warning' => 'https://cdn.jsdelivr.net/npm/@editorjs/warning@latest/dist/warning.umd.min.js',
+            'code' => 'https://cdn.jsdelivr.net/npm/@editorjs/code@latest/dist/code.umd.min.js',
+            'raw' => 'https://cdn.jsdelivr.net/npm/@editorjs/raw@latest/dist/raw.umd.min.js',
+            'quote' => 'https://cdn.jsdelivr.net/npm/@editorjs/quote@latest/dist/quote.umd.min.js',
+            'checklist' => 'https://cdn.jsdelivr.net/npm/@editorjs/checklist@latest/dist/checklist.umd.min.js',
+            'marker' => 'https://cdn.jsdelivr.net/npm/@editorjs/marker@latest/dist/marker.umd.min.js',
+        );
+        
+        foreach ($tools as $tool => $url) {
+            wp_enqueue_script(
+                'editorjs-tool-' . $tool,
+                $url,
+                array('editorjs-core'),
+                null,
+                true
+            );
+        }
+        
+        // Enqueue our custom integration
+        wp_enqueue_script(
+            'csf-editorjs-integration',
+            CSF_PLUGIN_URL . 'assets/js/editorjs-integration.js',
+            array('editorjs-core'),
+            filemtime(CSF_PLUGIN_DIR . 'assets/js/editorjs-integration.js'),
+            true
+        );
+        
+        wp_enqueue_script(
+            'csf-editorjs-upload',
+            CSF_PLUGIN_URL . 'assets/js/editorjs-upload.js',
+            array(),
+            filemtime(CSF_PLUGIN_DIR . 'assets/js/editorjs-upload.js'),
+            true
+        );
+        
+        // Localize for AJAX upload
+        wp_localize_script('csf-editorjs-upload', 'csfEditorJS', array(
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+            'uploadNonce' => wp_create_nonce('csf_editorjs_upload'),
+            'uploadUrl' => admin_url('admin-ajax.php?action=csf_editorjs_upload'),
+        ));
     }
 }
