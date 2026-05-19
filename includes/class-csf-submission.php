@@ -508,59 +508,57 @@ class CSF_Submission {
                     $name = ! empty( $attrs['name'] ) ? $attrs['name'] : sanitize_title( $attrs['label'] );
                     $key = 'csf_' . $name;
 
-                    if ( isset( $attrs['postMetaTarget'] ) && ! empty( $attrs['postMetaTarget'] ) && isset( $form_data[ $key ] ) ) {
-                        $value = $form_data[ $key ];
-                        if ( $attrs['postMetaTarget'] === 'post_title' ) {
+                    if (
+                        isset($attrs['postMetaTarget']) &&
+                        !empty($attrs['postMetaTarget']) &&
+                        isset($form_data[$key])
+                    ) {
+
+                        $value = $form_data[$key];
+
+                        if ($attrs['postMetaTarget'] === 'post_title') {
+
                             $post_title = $value;
-                        } elseif ($attrs['postMetaTarget'] === 'post_content') {
+
+                        }
+                        elseif ($attrs['postMetaTarget'] === 'post_content') {
 
                             $post_content =
-                            isset($_POST[$name])
+                                isset($_POST[$name])
+                                ? wp_unslash($_POST[$name])
+                                : wp_unslash($value);
 
-                            ? wp_unslash($_POST[$name])
+                            // EditorJS detected
+                            if (
+                                strpos($post_content,'"blocks"') !== false &&
+                                class_exists('CSF_EditorJS_Parser')
+                            ) {
 
-                            : wp_unslash($value);
+                                $post_content =
+                                    CSF_EditorJS_Parser::to_gutenberg(
+                                        $post_content
+                                    );
 
-                            /*
-                            detect EditorJS
-                            */
+                            } else {
 
-                            if(
-                                strpos(
-                                    $post_content,
-                                    '"blocks"'
-                                )!==false
-                                &&
-                                class_exists(
-                                    'CSF_EditorJS_Parser'
-                                )
-                            ){
-
-                                $post_content=
-                                CSF_EditorJS_Parser::to_gutenberg(
-                                    $post_content
-                                );
-
-                            }
-                            else{
-
-                                $post_content=
-                                wp_kses_post(
-                                    $post_content
-                                );
+                                $post_content =
+                                    wp_kses_post($post_content);
 
                             }
 
-                        };
-                        elseif ( $attrs['postMetaTarget'] === 'post_excerpt' ) {
-                            $post_excerpt = $value;
-                        } elseif ( $attrs['postMetaTarget'] === 'post_status' ) {
-                            $post_status = $value;
-                        } elseif ( $attrs['postMetaTarget'] === 'post_type' ) {
-                            $post_type = $value;
-                        } elseif ( $attrs['postMetaTarget'] === 'meta' && ! empty( $attrs['postMetaKey'] ) ) {
-                            $meta_input[ $attrs['postMetaKey'] ] = $value;
                         }
+                        elseif (
+                            $attrs['postMetaTarget'] === 'meta'
+                            &&
+                            !empty($attrs['postMetaKey'])
+                        ) {
+
+                            $meta_input[
+                                $attrs['postMetaKey']
+                            ] = $value;
+
+                        }
+
                     }
                 }
             }

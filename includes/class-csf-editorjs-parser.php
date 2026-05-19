@@ -84,33 +84,128 @@ class CSF_EditorJS_Parser {
 
                 case 'image':
 
-                    $url=esc_url(
+                    $url = esc_url(
                         $block['data']['file']['url'] ?? ''
                     );
 
-                    $caption=wp_kses_post(
+                    $caption = wp_kses_post(
                         $block['data']['caption'] ?? ''
                     );
 
+                    $withBorder = !empty(
+                        $block['data']['withBorder']
+                    );
+
+                    $withBackground = !empty(
+                        $block['data']['withBackground']
+                    );
+
+                    $stretched = !empty(
+                        $block['data']['stretched']
+                    );
+
+
+                    /*
+                    Default classes
+                    */
+
+                    $classes = array(
+                        'wp-block-image'
+                    );
+
+
+                    /*
+                    Gutenberg image attributes
+                    */
+
+                    $image_block_attrs='';
+
+
+                    /*
+                    With border
+                    */
+
+                    if($withBorder){
+
+                        $classes[]=
+                        'csf-image-border';
+
+                    }
+
+
+                    /*
+                    With background
+                    */
+
+                    if($withBackground){
+
+                        $classes[]=
+                        'csf-image-background';
+
+                    }
+
+
+                    /*
+                    Stretch image
+                    */
+
+                    if($stretched){
+
+                        /*
+                        Native Gutenberg
+                        wide alignment
+                        */
+
+                        $classes[]=
+                        'alignwide';
+
+                        $image_block_attrs=
+                        '{"align":"wide"}';
+
+                    }
+
+
+                    $classString=
+                    implode(
+                        ' ',
+                        $classes
+                    );
+
+
                     $content .= '
-<!-- wp:image -->
-<figure class="wp-block-image">
 
-<img src="'.$url.'"/>
+                <!-- wp:image '.$image_block_attrs.' -->
 
-'.(
-$caption
-?
-'<figcaption>'.$caption.'</figcaption>'
-:
-''
-).'
+                <figure class="'.$classString.'">
 
-</figure>
-<!-- /wp:image -->
-';
+                <img
+                src="'.$url.'"
+                decoding="async"
+                />
 
-                break;
+                '.(
+
+                $caption
+
+                ?
+
+                '<figcaption>'
+                .$caption.
+                '</figcaption>'
+
+                :
+
+                ''
+
+                ).'
+
+                </figure>
+
+                <!-- /wp:image -->
+
+                ';
+
+                break;                
 
 
 

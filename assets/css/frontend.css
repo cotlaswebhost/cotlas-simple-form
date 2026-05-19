@@ -945,3 +945,20 @@ label .required {
     margin-top: 0;
     margin-bottom: 10px;
 }
+.csf-image-border img{
+    border:3px solid #ddd;
+    border-radius:8px;
+}
+
+.csf-image-background{
+    background:#f5f5f5;
+    padding:25px;
+}
+
+.alignwide{
+    width:100%;
+}
+
+.alignwide img{
+    width:100%;
+}
