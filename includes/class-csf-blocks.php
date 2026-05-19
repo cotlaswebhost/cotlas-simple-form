@@ -1265,6 +1265,7 @@ class CSF_Blocks {
             'marker' => 'https://cdn.jsdelivr.net/npm/@editorjs/marker@latest/dist/marker.umd.min.js',
             'text-color' => 'https://cdn.jsdelivr.net/npm/editorjs-text-color-plugin@2.0.4/dist/bundle.js',
             'underline' => 'https://cdn.jsdelivr.net/npm/@editorjs/underline@latest/dist/bundle.js',
+            'inline-code' => 'https://cdn.jsdelivr.net/npm/@editorjs/inline-code@latest/dist/inline-code.umd.min.js',
         );
         
         foreach ($tools as $tool => $url) {

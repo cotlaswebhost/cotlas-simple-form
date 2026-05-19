@@ -151,6 +151,16 @@ class CSFEditorJS {
                     title: 'Underline',
                     icon: '<svg width="20" height="20" viewBox="0 0 20 20"><path d="M5 4v6c0 2.5 2 5 5 5s5-2.5 5-5V4h-2v6c0 1.5-1 3-3 3s-3-1.5-3-3V4H5zM4 15h12v2H4z"/></svg>'
                 }
+            },
+            // Add text-color tool
+            textColor: {
+                class: ColorPlugin,
+                config: {
+                   colorCollections: ['#000000', '#FF1300', '#EC7878','#9C27B0','#673AB7','#3F51B5','#0070FF','#03A9F4','#00BCD4','#4CAF50','#8BC34A','#CDDC39', '#FFF'],
+                   defaultColor: '#FF1300',
+                   type: 'text', 
+                   customPicker: true
+                }
             }
         };
         
@@ -183,7 +193,7 @@ class CSFEditorJS {
             placeholder: this.config.placeholder || 'Start writing...',
             autofocus: this.config.autofocus || false,
             // Enable inline toolbar for all blocks that support it
-            inlineToolbar: ['link', 'marker', 'bold', 'italic', 'inlineCode', 'underline'],
+            inlineToolbar: ['link', 'marker', 'bold', 'italic', 'inlineCode', 'underline', 'textColor'],
             // Enable block tunes menu
             tunes: ['stretch', 'border', 'background'],
             onChange: () => {
@@ -226,7 +236,8 @@ class CSFEditorJS {
                         'Bold': 'Bold',
                         'Italic': 'Italic',
                         'Inline Code': 'Inline Code',
-                        'Underline': 'Underline'
+                        'Underline': 'Underline',
+                        'textColor': 'Text Color'
                     }
                 }
             }
