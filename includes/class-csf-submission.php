@@ -199,26 +199,79 @@ class CSF_Submission {
             }
             
             $this->send_email( $form_id, $form_data, $files );
-            $thank_heading = get_post_meta( $form_id, 'csf_form_thankyou_heading', true );
-            $thank_message = get_post_meta( $form_id, 'csf_form_thankyou_message', true );
-            $thank_referrer = get_post_meta( $form_id, 'csf_form_thankyou_referrer', true );
+                        $thank_heading = get_post_meta(
+                $form_id,
+                'csf_form_thankyou_heading',
+                true
+            );
+
+            $thank_message = get_post_meta(
+                $form_id,
+                'csf_form_thankyou_message',
+                true
+            );
+
+            $thank_referrer = get_post_meta(
+                $form_id,
+                'csf_form_thankyou_referrer',
+                true
+            );
+
             $data = array(
-                'message' => 'Form submitted successfully.',
+
+                'message' => $edit_post_id
+                    ? __( 'Post updated successfully.', 'cotlas-simple-forms' )
+                    : __( 'Post submitted successfully.', 'cotlas-simple-forms' ),
+
+                'post_id' => $new_post_id
+
             );
             if ( $thank_heading ) {
-                $data['thankyou_heading'] = $thank_heading;
+
+                $data['thankyou_heading'] =
+                $thank_heading;
+
             }
+
             if ( $thank_message ) {
-                $data['thankyou_message'] = $thank_message;
+
+                $data['thankyou_message'] =
+                $thank_message;
+
             }
+
             if ( $thank_referrer === '1' ) {
-                $data['thankyou_use_referrer'] = true;
+
+                $data['thankyou_use_referrer'] =
+                true;
+
             }
-            $redirect_url = get_post_meta( $form_id, 'csf_form_redirect_url', true );
-            if ( $redirect_url ) {
-                $data['redirect_url'] = esc_url_raw( $redirect_url );
+
+
+           /*
+            |--------------------------------------------------------------------------
+            | Redirect support (Normal Forms)
+            |--------------------------------------------------------------------------
+            */
+
+            $redirect_url = get_post_meta(
+                $form_id,
+                'csf_form_redirect_url',
+                true
+            );
+
+            if ( ! empty( $redirect_url ) ) {
+
+                $data['redirect_url'] =
+                esc_url_raw(
+                    $redirect_url
+                );
+
             }
-            wp_send_json_success( $data );
+
+            wp_send_json_success(
+                $data
+            );
         } else {
             wp_send_json_error( array( 'message' => 'Failed to save submission.' ) );
         }
@@ -498,6 +551,9 @@ class CSF_Submission {
         $post_title = '';
         $post_content = '';
         $post_excerpt = '';
+        $post_categories = array();
+        $post_tags = array();
+        $featured_image_field='';
         $meta_input = array();
 
         if ( $post ) {
@@ -519,6 +575,98 @@ class CSF_Submission {
                         if ($attrs['postMetaTarget'] === 'post_title') {
 
                             $post_title = $value;
+
+                        }
+                        elseif(
+                            $attrs['postMetaTarget']
+                            === 'post_excerpt'
+                        ){
+
+                            $post_excerpt=
+                            sanitize_textarea_field(
+                                $value
+                            );
+
+                        }
+                        elseif(
+                            $attrs['postMetaTarget']
+                            === 'post_category'
+                        ){
+
+                            if(
+                                is_array($value)
+                            ){
+
+                                $post_categories=
+                                array_map(
+                                    'intval',
+                                    $value
+                                );
+
+                            }else{
+
+                                $post_categories=
+                                array_map(
+
+                                    'intval',
+
+                                    array_filter(
+
+                                        array_map(
+                                            'trim',
+
+                                            explode(
+                                                ',',
+                                                $value
+                                            )
+
+                                        )
+
+                                    )
+
+                                );
+
+                            }
+
+                        }
+                        elseif(
+                            $attrs['postMetaTarget']
+                            === 'post_tags'
+                        ){
+
+                            /*
+                            comma list
+                            multi select
+                            */
+
+                            if(
+                                is_array($value)
+                            ){
+
+                                $post_tags=$value;
+
+                            }else{
+
+                                $post_tags=
+                                array_map(
+                                    'trim',
+                                    explode(
+                                        ',',
+                                        $value
+                                    )
+                                );
+
+                            }
+
+                        }
+
+                        elseif(
+                            $attrs['postMetaTarget']
+                            === 'featured_image'
+                        ){
+
+                            $featured_image_field=
+                            $name;
 
                         }
                         elseif ($attrs['postMetaTarget'] === 'post_content') {
@@ -579,14 +727,16 @@ class CSF_Submission {
         if ( empty( $post_excerpt ) ) {
             $post_excerpt = isset( $form_data['csf_post_excerpt'] ) ? sanitize_textarea_field( $form_data['csf_post_excerpt'] ) : '';
         }
-
+        
         $post_data = array(
-            'post_title'   => $post_title,
-            'post_content' => $post_content,
-            'post_excerpt' => $post_excerpt,
-            'post_status'  => $post_status,
-            'post_type'    => $post_type,
-            'meta_input'   => $meta_input,
+            'post_title'=>$post_title,
+            'post_content'=>$post_content,
+            'post_excerpt'=>$post_excerpt,
+            'post_status'=>$post_status,
+            'post_type'=>$post_type,
+            'post_category'=>$post_categories,
+            'tags_input'=>$post_tags,
+            'meta_input'=>$meta_input,
         );
 
         if ( is_user_logged_in() ) {
@@ -640,8 +790,28 @@ class CSF_Submission {
             wp_set_post_tags( $new_post_id, sanitize_text_field( $form_data['csf_post_tags'] ), true );
         }
 
-        if ( isset( $files['featured_image'] ) ) {
-            $this->set_featured_image( $new_post_id, $files['featured_image'] );
+        if(
+            !empty(
+            $featured_image_field
+            )
+            &&
+            isset(
+            $files[
+            $featured_image_field
+            ]
+            )
+            ){
+
+            $this->set_featured_image(
+
+            $new_post_id,
+
+            $files[
+            $featured_image_field
+            ]
+
+            );
+
         }
 
         foreach ( $form_data as $key => $value ) {
@@ -674,18 +844,59 @@ class CSF_Submission {
         $thank_message = get_post_meta( $form_id, 'csf_form_thankyou_message', true );
         $thank_referrer = get_post_meta( $form_id, 'csf_form_thankyou_referrer', true );
         $data = array(
-            'message' => __( 'Post submitted successfully.', 'cotlas-simple-forms' ),
+
+            'message' => $edit_post_id
+                ? __('Post updated successfully.','cotlas-simple-forms')
+                : __('Post submitted successfully.','cotlas-simple-forms'),
+
+            'post_id' => $new_post_id
+
         );
-        if ( $thank_heading ) {
-            $data['thankyou_heading'] = $thank_heading;
+
+        if ($thank_heading) {
+            $data['thankyou_heading']=$thank_heading;
         }
-        if ( $thank_message ) {
-            $data['thankyou_message'] = $thank_message;
+
+        if ($thank_message) {
+            $data['thankyou_message']=$thank_message;
         }
-        if ( $thank_referrer === '1' ) {
-            $data['thankyou_use_referrer'] = true;
+
+        if ($thank_referrer==='1') {
+            $data['thankyou_use_referrer']=true;
         }
-        wp_send_json_success( $data );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Redirect support
+        |--------------------------------------------------------------------------
+        */
+
+        $redirect_url=get_post_meta(
+            $form_id,
+            'csf_form_redirect_url',
+            true
+        );
+
+        if(!empty($redirect_url)){
+
+            $redirect_url=str_replace(
+                '{post_id}',
+                $new_post_id,
+                $redirect_url
+            );
+
+            $redirect_url=str_replace(
+                '{post_url}',
+                get_permalink($new_post_id),
+                $redirect_url
+            );
+
+            $data['redirect_url']=
+            esc_url_raw($redirect_url);
+        }
+
+        wp_send_json_success($data);
     }
 
     private function set_featured_image( $post_id, $file_url ) {

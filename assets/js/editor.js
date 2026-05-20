@@ -605,6 +605,10 @@
                             options: [
                                 { label: '— No mapping —', value: '' },
                                 { label: 'Post Title', value: 'post_title' },
+                                { label: 'Post Excerpt', value: 'post_excerpt' },
+                                { label: 'Featured Image', value: 'featured_image' },
+                                { label: 'Post Categories', value: 'post_category' },
+                                { label: 'Post Tags', value: 'post_tags' },
                                 { label: 'Post Content', value: 'post_content' },
                                 { label: 'Custom post meta key', value: 'meta' },
                             ],

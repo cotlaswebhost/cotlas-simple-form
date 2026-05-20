@@ -302,7 +302,60 @@ class CSF_Blocks {
                     }
 
                     break;
+                    case 'post_category':
 
+                        $terms=
+                        wp_get_post_categories(
+                            $edit_post->ID
+                        );
+
+                        $value=
+                        implode(
+                            ',',
+                            $terms
+                        );
+
+                    break;
+
+
+
+                    case 'post_tags':
+
+                        $terms=
+                        wp_get_post_tags(
+                            $edit_post->ID,
+                            array(
+                                'fields'=>'names'
+                            )
+                        );
+
+                        $value=
+                        implode(
+                            ', ',
+                            $terms
+                        );
+
+                    break;
+
+
+
+                    case 'featured_image':
+
+                        $thumb=
+                        get_post_thumbnail_id(
+                            $edit_post->ID
+                        );
+
+                        if($thumb){
+
+                            $value=
+                            wp_get_attachment_url(
+                                $thumb
+                            );
+
+                        }
+
+                    break;
 
                     case 'meta':
 
@@ -454,7 +507,34 @@ class CSF_Blocks {
                     $terms = get_terms( array( 'taxonomy' => $attributes['taxonomy'], 'hide_empty' => ! $show_empty ) );
                     if ( ! is_wp_error( $terms ) ) {
                         foreach ( $terms as $term ) {
-                            $html .= '<option value="' . esc_attr( $term->name ) . '">' . esc_html( $term->name ) . '</option>';
+
+                            $selected_values =
+                            array_map(
+                                'trim',
+                                explode(',', $value)
+                            );
+
+                            $html .= '<option value="' .
+                            esc_attr($term->term_id) .
+                            '" ' .
+
+                            selected(
+                                in_array(
+                                    $term->term_id,
+                                    $selected_values
+                                ),
+                                true,
+                                false
+                            )
+
+                            .'>' .
+
+                            esc_html(
+                                $term->name
+                            )
+
+                            .'</option>';
+
                         }
                     }
                 }
@@ -497,7 +577,34 @@ class CSF_Blocks {
                     $terms = get_terms( array( 'taxonomy' => $attributes['taxonomy'], 'hide_empty' => false ) );
                     if ( ! is_wp_error( $terms ) ) {
                         foreach ( $terms as $term ) {
-                            $html .= '<option value="' . esc_attr( $term->name ) . '">' . esc_html( $term->name ) . '</option>';
+
+                            $selected_values =
+                            array_map(
+                                'trim',
+                                explode(',', $value)
+                            );
+
+                            $html .= '<option value="' .
+                            esc_attr($term->term_id) .
+                            '" ' .
+
+                            selected(
+                                in_array(
+                                    $term->term_id,
+                                    $selected_values
+                                ),
+                                true,
+                                false
+                            )
+
+                            .'>' .
+
+                            esc_html(
+                                $term->name
+                            )
+
+                            .'</option>';
+
                         }
                     }
                 }
@@ -757,8 +864,83 @@ class CSF_Blocks {
                 break;
                 
             case 'file':
-                $html .= '<input type="file" name="' . esc_attr( $name ) . '" id="' . esc_attr( $unique_id ) . '" ' . $required . '>';
-                break;
+
+                if(!empty($value)){
+
+                    $html .= '
+
+                    <div
+                    class="csf-existing-image"
+                    style="
+                    position:relative;
+                    display:inline-block;
+                    ">
+
+                        <img
+                        src="'.
+                        esc_url($value).
+                        '"
+
+                        style="
+                        max-width:150px;
+                        border-radius:6px;
+                        display:block;
+                        ">
+
+                        <span
+                        class="csf-remove-image"
+
+                        style="
+                        position:absolute;
+                        top:-8px;
+                        left: 157px;
+                        width:22px;
+                        height:22px;
+                        background:#e53935;
+                        color:#fff;
+                        border-radius:50%;
+                        cursor:pointer;
+                        text-align:center;
+                        line-height:22px;
+                        font-size:14px;
+                        font-weight:bold;
+                        "
+
+                        data-target="'.
+                        esc_attr($unique_id).
+                        '"
+
+                        >×</span>
+
+                    </div>
+
+                <input
+                type="hidden"
+                name="remove_featured_image"
+                value="0"
+                id="remove_featured_image">
+
+                ';
+                }
+
+                $html .=
+                '<input
+
+                type="file"
+
+                name="'.
+                esc_attr($name).
+                '"
+
+                id="'.
+                esc_attr($unique_id).
+                '"
+
+                '.$required.'
+
+                >';
+
+            break;
                 
             case 'date':
                 $html .= '<input type="date" name="' . esc_attr( $name ) . '" id="' . esc_attr( $unique_id ) . '" value="' . esc_attr( $value ) . '" ' . $required . ' class="csf-date-input">';

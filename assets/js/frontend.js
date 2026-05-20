@@ -849,10 +849,29 @@ jQuery(document).ready(function($) {
                 if (response.success) {
                     var $wrapper = $form.closest('.csf-form-wrapper');
                     var isConversational = $wrapper.hasClass('csf-template-conversational');
-                    var redirectUrl = response.data && response.data.redirect_url ? response.data.redirect_url : null;
-                    if (redirectUrl) {
-                        window.location.href = redirectUrl;
+                    console.log('CSF Response:',response);
+
+                    var redirectUrl =
+
+                    response?.data?.redirect_url ||
+
+                    response?.data?.redirect ||
+
+                    null;
+
+
+                    if(redirectUrl){
+
+                        console.log(
+                        'Redirecting:',
+                        redirectUrl
+                        );
+
+                        window.location.href=
+                        redirectUrl;
+
                         return;
+
                     }
                     csfClearFormSessionData($form);
                     $form[0].reset();
@@ -1320,6 +1339,27 @@ var gpFeaturedAudio = {};
     });
 
 })(jQuery);
+document.addEventListener(
+'click',
+function(e){
 
+if(
+e.target.classList.contains(
+'csf-remove-image'
+)
+){
 
+let box=
+e.target.closest(
+'.csf-existing-image'
+);
 
+box.remove();
+
+document.getElementById(
+'remove_featured_image'
+).value='1';
+
+}
+
+});
